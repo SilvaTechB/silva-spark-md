@@ -1,75 +1,249 @@
-const {
-  cmd
-} = require('../command');
-const config = require("../config");
+const { cmd } = require('../command');
+const config = require('../config');
+
+// ==============================
+// 🚫 ANTI-BAD WORD FILTER
+// ==============================
 cmd({
-  'on': "body"
-}, async (_0x4be391, _0x2bbd0c, _0x558f90, {
-  from: _0x529db2,
-  body: _0x572277,
-  isGroup: _0xffba41,
-  isAdmins: _0x5e74ad,
-  isBotAdmins: _0x26676b,
-  reply: _0x53a5ce,
-  sender: _0x3dfc05
+    on: "body"
+}, async (conn, mek, m, {
+    from,
+    body,
+    isGroup,
+    isAdmins,
+    isBotAdmins,
+    reply,
+    sender
 }) => {
-  try {
-    const _0x3b3c8f = ["wtf", "mia", "xxx", "fuck", 'sex', "huththa", "pakaya", 'ponnaya', "hutto"];
-    if (!_0xffba41 || _0x5e74ad || !_0x26676b) {
-      return;
+    try {
+        // List of bad words to filter
+        const badWords = [
+            "wtf", "mia", "xxx", "fuck", "sex", 
+            "huththa", "pakaya", "ponnaya", "hutto",
+            "bitch", "ass", "dick", "pussy", "cunt",
+            "shit", "bastard", "damn", "hell"
+        ];
+
+        // Only run in groups where bot is admin and user is not admin
+        if (!isGroup || isAdmins || !isBotAdmins || config.ANTI_BAD_WORD !== "true") {
+            return;
+        }
+
+        const messageText = body.toLowerCase();
+        const containsBadWord = badWords.some(word => {
+            const regex = new RegExp(`\\b${word}\\b`, 'i');
+            return regex.test(messageText);
+        });
+
+        if (containsBadWord) {
+            // Delete the message
+            await conn.sendMessage(from, {
+                delete: mek.key
+            });
+
+            // Send warning message
+            await conn.sendMessage(from, {
+                text: `🚫 *⚠️ BAD WORD DETECTED ⚠️*\n\n💎 *Silva Spark MD* detected inappropriate language.\n\n👤 *User:* @${sender.split('@')[0]}\n⚠️ *Action:* Message deleted\n📝 *Reminder:* Please maintain respectful communication in this group.`,
+                mentions: [sender]
+            }, {
+                quoted: mek
+            });
+
+            console.log(`[ANTI-BAD-WORD] Deleted message from ${sender.split('@')[0]} in ${from}`);
+        }
+    } catch (error) {
+        console.error('[ANTI-BAD-WORD ERROR]:', error);
+        reply("⚠️ An error occurred while filtering bad words.");
     }
-    const _0x157c8a = _0x572277.toLowerCase();
-    const _0x371867 = _0x3b3c8f.some(_0x2e3bd4 => _0x157c8a.includes(_0x2e3bd4));
-    if (_0x371867 & config.ANTI_BAD_WORD === "true") {
-      await _0x4be391.sendMessage(_0x529db2, {
-        'delete': _0x2bbd0c.key
-      }, {
-        'quoted': _0x2bbd0c
-      });
-      await _0x4be391.sendMessage(_0x529db2, {
-        'text': "🚫 ⚠️💎 Sɪʟᴠᴀ Sᴘᴀʀᴋ MD 💎 BAD WORDS NOT ALLOWED⚠️ 🚫"
-      }, {
-        'quoted': _0x2bbd0c
-      });
-    }
-  } catch (_0x47eee8) {
-    console.error(_0x47eee8);
-    _0x53a5ce("An error occurred while processing the message.");
-  }
 });
-const linkPatterns = [/https?:\/\/(?:chat\.whatsapp\.com|wa\.me)\/\S+/gi, /^https?:\/\/(www\.)?whatsapp\.com\/channel\/([a-zA-Z0-9_-]+)$/, /wa\.me\/\S+/gi, /https?:\/\/(?:t\.me|telegram\.me)\/\S+/gi, /https?:\/\/(?:www\.)?youtube\.com\/\S+/gi, /https?:\/\/youtu\.be\/\S+/gi, /https?:\/\/(?:www\.)?facebook\.com\/\S+/gi, /https?:\/\/fb\.me\/\S+/gi, /https?:\/\/(?:www\.)?instagram\.com\/\S+/gi, /https?:\/\/(?:www\.)?twitter\.com\/\S+/gi, /https?:\/\/(?:www\.)?tiktok\.com\/\S+/gi, /https?:\/\/(?:www\.)?linkedin\.com\/\S+/gi, /https?:\/\/(?:www\.)?snapchat\.com\/\S+/gi, /https?:\/\/(?:www\.)?pinterest\.com\/\S+/gi, /https?:\/\/(?:www\.)?reddit\.com\/\S+/gi, /https?:\/\/ngl\/\S+/gi, /https?:\/\/(?:www\.)?discord\.com\/\S+/gi, /https?:\/\/(?:www\.)?twitch\.tv\/\S+/gi, /https?:\/\/(?:www\.)?vimeo\.com\/\S+/gi, /https?:\/\/(?:www\.)?dailymotion\.com\/\S+/gi, /https?:\/\/(?:www\.)?medium\.com\/\S+/gi];
+
+// ==============================
+// 🔗 ANTI-LINK FILTER
+// ==============================
+const linkPatterns = [
+    // WhatsApp links
+    /https?:\/\/(?:chat\.whatsapp\.com|wa\.me)\/\S+/gi,
+    /^https?:\/\/(www\.)?whatsapp\.com\/channel\/([a-zA-Z0-9_-]+)$/,
+    /wa\.me\/\S+/gi,
+    
+    // Telegram links
+    /https?:\/\/(?:t\.me|telegram\.me)\/\S+/gi,
+    
+    // YouTube links
+    /https?:\/\/(?:www\.)?youtube\.com\/\S+/gi,
+    /https?:\/\/youtu\.be\/\S+/gi,
+    
+    // Social media links
+    /https?:\/\/(?:www\.)?facebook\.com\/\S+/gi,
+    /https?:\/\/fb\.me\/\S+/gi,
+    /https?:\/\/(?:www\.)?instagram\.com\/\S+/gi,
+    /https?:\/\/(?:www\.)?twitter\.com\/\S+/gi,
+    /https?:\/\/(?:www\.)?x\.com\/\S+/gi,
+    /https?:\/\/(?:www\.)?tiktok\.com\/\S+/gi,
+    /https?:\/\/(?:www\.)?linkedin\.com\/\S+/gi,
+    /https?:\/\/(?:www\.)?snapchat\.com\/\S+/gi,
+    /https?:\/\/(?:www\.)?pinterest\.com\/\S+/gi,
+    /https?:\/\/(?:www\.)?reddit\.com\/\S+/gi,
+    
+    // Other platforms
+    /https?:\/\/ngl\.link\/\S+/gi,
+    /https?:\/\/(?:www\.)?discord\.(?:com|gg)\/\S+/gi,
+    /https?:\/\/(?:www\.)?twitch\.tv\/\S+/gi,
+    /https?:\/\/(?:www\.)?vimeo\.com\/\S+/gi,
+    /https?:\/\/(?:www\.)?dailymotion\.com\/\S+/gi,
+    /https?:\/\/(?:www\.)?medium\.com\/\S+/gi,
+    
+    // Generic URL pattern (catches most links)
+    /https?:\/\/\S+\.\S+/gi
+];
+
 cmd({
-  'on': "body"
-}, async (_0x488fe3, _0x4807fa, _0x524921, {
-  from: _0x49635a,
-  body: _0x3c0765,
-  sender: _0x36e9e2,
-  isGroup: _0x5cc616,
-  isAdmins: _0x4f15b6,
-  isBotAdmins: _0x148963,
-  reply: _0x3855a2
+    on: "body"
+}, async (conn, mek, m, {
+    from,
+    body,
+    sender,
+    isGroup,
+    isAdmins,
+    isBotAdmins,
+    reply
 }) => {
-  try {
-    if (!_0x5cc616 || _0x4f15b6 || !_0x148963) {
-      return;
+    try {
+        // Only run in groups where bot is admin and user is not admin
+        if (!isGroup || isAdmins || !isBotAdmins || config.ANTI_LINK !== 'true') {
+            return;
+        }
+
+        // Check if message contains any link
+        const containsLink = linkPatterns.some(pattern => pattern.test(body));
+
+        if (containsLink) {
+            // Delete the message
+            await conn.sendMessage(from, {
+                delete: mek.key
+            });
+
+            // Send warning and remove user
+            await conn.sendMessage(from, {
+                text: `🚫 *⚠️ LINK DETECTED ⚠️*\n\n💎 *Silva Spark MD* detected an unauthorized link.\n\n👤 *User:* @${sender.split('@')[0]}\n⚠️ *Action:* User removed from group\n📝 *Reason:* Links are not allowed in this group.`,
+                mentions: [sender]
+            }, {
+                quoted: mek
+            });
+
+            // Remove user from group
+            await conn.groupParticipantsUpdate(from, [sender], "remove");
+
+            console.log(`[ANTI-LINK] Removed ${sender.split('@')[0]} from ${from} for posting link`);
+        }
+    } catch (error) {
+        console.error('[ANTI-LINK ERROR]:', error);
+        
+        // If removal fails, just delete message and warn
+        if (error.message.includes('forbidden') || error.message.includes('not authorized')) {
+            reply("⚠️ I don't have permission to remove members. Please make me an admin.");
+        } else {
+            reply("⚠️ An error occurred while processing the link.");
+        }
     }
-    const _0x58c73c = linkPatterns.some(_0x332817 => _0x332817.test(_0x3c0765));
-    if (_0x58c73c && config.ANTI_LINK === 'true') {
-      await _0x488fe3.sendMessage(_0x49635a, {
-        'delete': _0x4807fa.key
-      }, {
-        'quoted': _0x4807fa
-      });
-      await _0x488fe3.sendMessage(_0x49635a, {
-        'text': "⚠️💎 Sɪʟᴠᴀ Sᴘᴀʀᴋ MD 💎 Links are not allowed in this group.\n@" + _0x36e9e2.split('@')[0x0] + " has been removed. 🚫",
-        'mentions': [_0x36e9e2]
-      }, {
-        'quoted': _0x4807fa
-      });
-      await _0x488fe3.groupParticipantsUpdate(_0x49635a, [_0x36e9e2], "remove");
+});
+
+// ==============================
+// 📝 COMMAND: Toggle Anti-Link
+// ==============================
+cmd({
+    pattern: "antilink",
+    alias: ["antilinkmode"],
+    desc: "Enable or disable anti-link protection",
+    category: "group",
+    react: "🔗",
+    filename: __filename
+}, async (conn, mek, m, {
+    from,
+    args,
+    isGroup,
+    isAdmins,
+    isBotAdmins,
+    reply
+}) => {
+    try {
+        if (!isGroup) {
+            return reply("❌ This command can only be used in groups.");
+        }
+
+        if (!isAdmins) {
+            return reply("❌ This command is only for group admins.");
+        }
+
+        if (!isBotAdmins) {
+            return reply("❌ I need to be an admin to use this feature.");
+        }
+
+        const mode = args[0]?.toLowerCase();
+
+        if (!mode || !["on", "off"].includes(mode)) {
+            return reply(`📝 *Anti-Link Status*\n\nCurrent: ${config.ANTI_LINK === 'true' ? '✅ Enabled' : '❌ Disabled'}\n\n*Usage:*\n${config.PREFIX}antilink on\n${config.PREFIX}antilink off`);
+        }
+
+        if (mode === "on") {
+            config.ANTI_LINK = "true";
+            reply("✅ Anti-Link protection has been *ENABLED*\n\nAll links will be deleted and users will be removed.");
+        } else {
+            config.ANTI_LINK = "false";
+            reply("❌ Anti-Link protection has been *DISABLED*\n\nUsers can now share links freely.");
+        }
+    } catch (error) {
+        console.error('[ANTILINK COMMAND ERROR]:', error);
+        reply("❌ An error occurred while toggling anti-link.");
     }
-  } catch (_0x2e5577) {
-    console.error(_0x2e5577);
-    _0x3855a2("An error occurred while processing the message.");
-  }
+});
+
+// ==============================
+// 📝 COMMAND: Toggle Anti-Bad Word
+// ==============================
+cmd({
+    pattern: "antibadword",
+    alias: ["antibad", "antiswear"],
+    desc: "Enable or disable bad word filter",
+    category: "group",
+    react: "🚫",
+    filename: __filename
+}, async (conn, mek, m, {
+    from,
+    args,
+    isGroup,
+    isAdmins,
+    isBotAdmins,
+    reply
+}) => {
+    try {
+        if (!isGroup) {
+            return reply("❌ This command can only be used in groups.");
+        }
+
+        if (!isAdmins) {
+            return reply("❌ This command is only for group admins.");
+        }
+
+        if (!isBotAdmins) {
+            return reply("❌ I need to be an admin to use this feature.");
+        }
+
+        const mode = args[0]?.toLowerCase();
+
+        if (!mode || !["on", "off"].includes(mode)) {
+            return reply(`📝 *Anti-Bad Word Status*\n\nCurrent: ${config.ANTI_BAD_WORD === 'true' ? '✅ Enabled' : '❌ Disabled'}\n\n*Usage:*\n${config.PREFIX}antibadword on\n${config.PREFIX}antibadword off`);
+        }
+
+        if (mode === "on") {
+            config.ANTI_BAD_WORD = "true";
+            reply("✅ Bad word filter has been *ENABLED*\n\nInappropriate messages will be deleted automatically.");
+        } else {
+            config.ANTI_BAD_WORD = "false";
+            reply("❌ Bad word filter has been *DISABLED*");
+        }
+    } catch (error) {
+        console.error('[ANTIBADWORD COMMAND ERROR]:', error);
+        reply("❌ An error occurred while toggling bad word filter.");
+    }
 });
