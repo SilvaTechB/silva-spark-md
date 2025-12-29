@@ -161,21 +161,33 @@ const {
   console.log('Plugins installed successful ✅')
   console.log('Bot connected to whatsapp ✅')
   
+  // Get bot's own JID properly
+  const botJid = conn.user.id;
+  
   let up = `*Hello there ✦ Silva ✦ Spark ✦ MD ✦ User! 👋🏻* \n\n> This is auser friendly whatsapp bot created by Silva Tech Inc 🎊, Meet ✦ Silva ✦ Spark ✦ MD ✦ WhatsApp Bot.\n\n *Thanks for using ✦ Silva ✦ Spark ✦ MD ✦ 🚩* \n\n> follow WhatsApp Channel :- 💖\n \nhttps://whatsapp.com/channel/0029VaAkETLLY6d8qhLmZt2v\n\n- *YOUR PREFIX:* = ${prefix}\n\nDont forget to give star to repo ⬇️\n\nhttps://github.com/SilvaTechB/silva-spark-md\n\n> © Powered BY ✦ Silva ✦ Spark ✦ MD ✦ 🖤`;
-  conn.sendMessage(conn.user.id, { 
-    video: { url:`https://files.catbox.moe/2xxr9h.mp4` }, 
-    caption: up,
-    contextInfo: globalContextInfo 
-  })
+  
+  try {
+    await conn.sendMessage(botJid, { 
+      video: { url:`https://files.catbox.moe/2xxr9h.mp4` }, 
+      caption: up,
+      contextInfo: globalContextInfo 
+    });
+    console.log('✅ Welcome message sent successfully');
+  } catch (error) {
+    console.log('❌ Failed to send welcome message:', error.message);
+  }
   }
   })
   conn.ev.on('creds.update', saveCreds)  
       
   //=============readstatus=======
         
-  conn.ev.on('messages.upsert', async(mek) => {
-    mek = mek.messages[0]
+  conn.ev.on('messages.upsert', async(msg) => {
+    try {
+    const mek = msg.messages[0]
     if (!mek.message) return
+    
+    console.log('📨 Message received from:', mek.key.remoteJid);
     
     // Store message for antidelete
     if (mek.key && mek.key.remoteJid !== 'status@broadcast') {
@@ -661,10 +673,12 @@ if (!isReact && senderNumber === botNumber) {
   if(!isOwner && !isGroup && config.MODE === "groups") return
    
   // take commands 
+  console.log('🔍 Checking for commands. isCmd:', isCmd, 'body:', body);
                  
   const events = require('./command')
   const cmdName = isCmd ? body.slice(1).trim().split(" ")[0].toLowerCase() : false;
   if (isCmd) {
+  console.log('⚡ Command detected:', cmdName);
   const cmd = events.commands.find((cmd) => cmd.pattern === (cmdName)) || events.commands.find((cmd) => cmd.alias && cmd.alias.includes(cmdName))
   if (cmd) {
   if (cmd.react) conn.sendMessage(from, { react: { text: cmd.react, key: mek.key }})
@@ -693,6 +707,9 @@ if (!isReact && senderNumber === botNumber) {
   command.function(conn, mek, m,{from, l, quoted, body, isCmd, command, args, q, isGroup, sender, senderNumber, botNumber2, botNumber, pushname, isMe, isOwner, groupMetadata, groupName, participants, groupAdmins, isBotAdmins, isAdmins, reply})
   }});
   
+  } catch (e) {
+    console.error("[MESSAGE UPSERT ERROR] ", e);
+  }
   })
   
   // ============================== 
@@ -709,6 +726,9 @@ if (!isReact && senderNumber === botNumber) {
         
         if (deletedMsg && config.ANTI_DELETE === 'true') {
           try {
+            // Get bot's own number
+            const botNumber = conn.user.id.split(':')[0] + '@s.whatsapp.net';
+            
             const chatName = deletedMsg.chat.endsWith('@g.us') 
               ? (await conn.groupMetadata(deletedMsg.chat).catch(() => null))?.subject || 'Unknown Group'
               : deletedMsg.sender.split('@')[0];
@@ -725,14 +745,14 @@ if (!isReact && senderNumber === botNumber) {
             caption += `⏰ *Time:* ${new Date().toLocaleString()}\n\n`;
             caption += `💬 *Message Below* 👇`;
             
-            // Forward the deleted message to owner
-            await conn.sendMessage("254700143167@s.whatsapp.net", {
+            // Forward the deleted message to bot's own number
+            await conn.sendMessage(botNumber, {
               text: caption,
               contextInfo: globalContextInfo
             });
             
             // Forward the actual message
-            await conn.copyNForward("254700143167@s.whatsapp.net", deletedMsg.message, true);
+            await conn.copyNForward(botNumber, deletedMsg.message, true);
             
             console.log(`✅ Anti-delete: Forwarded deleted message from ${senderName}`);
           } catch (error) {
