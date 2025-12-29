@@ -159,29 +159,6 @@ async function connectToWA() {
         version
     })
     
-    // Define decodeJid function early
-    conn.decodeJid = (jid) => {
-        if (!jid) return jid;
-        if (/:\d+@/gi.test(jid)) {
-            let decode = jidDecode(jid) || {};
-            return (
-                (decode.user &&
-                    decode.server &&
-                    decode.user + '@' + decode.server) ||
-                jid
-            );
-        } else return jid;
-    };
-    
-    // Helper function to get bot JID
-    conn.getBotJid = () => {
-        try {
-            return conn.user.id.split(':')[0] + '@s.whatsapp.net';
-        } catch (e) {
-            return conn.user.id;
-        }
-    };
-    
     conn.ev.on('connection.update', async (update) => {
         const { connection, lastDisconnect } = update
         if (connection === 'close') {
@@ -309,7 +286,7 @@ async function connectToWA() {
                                 const groupMetadata = await conn.groupMetadata(storedMessage.chat);
                                 chatName = groupMetadata.subject;
                             } catch (e) {
-                                chatName = storedMessage.chat.split('@')[0];
+                                chatName = storedMessage.chat;
                             }
                         }
                         
@@ -319,14 +296,15 @@ async function connectToWA() {
                         let notificationText = `🗑️ *ANTI-DELETE ALERT*\n\n`;
                         notificationText += `📍 *Location:* ${isGroup ? 'Group' : 'Private Chat'}\n`;
                         notificationText += `💬 *Chat:* ${chatName}\n`;
-                        notificationText += `👤 *Sent By:* ${senderName}\n`;
-                        notificationText += `🗑️ *Deleted By:* ${deletedByName}\n`;
+                        notificationText += `👤 *Sent By:* @${senderName.replace('@', '')}\n`;
+                        notificationText += `🗑️ *Deleted By:* @${deletedByName}\n`;
                         notificationText += `⏰ *Time:* ${new Date().toLocaleString()}\n`;
                         notificationText += `\n📨 *Forwarding deleted message...*`;
                         
                         // Send notification
                         await conn.sendMessage(ownerJid, { 
                             text: notificationText,
+                            mentions: [deletedBy, storedMessage.sender],
                             contextInfo: globalContextInfo
                         });
                         
@@ -375,7 +353,7 @@ async function connectToWA() {
         
         if (mek.key && mek.key.remoteJid === 'status@broadcast' && config.AUTO_STATUS_REACT === "true") {
             try {
-                const botJid = conn.getBotJid ? conn.getBotJid() : (conn.user.id.split(':')[0] + '@s.whatsapp.net');
+                const botJid = conn.user.id.split(':')[0] + '@s.whatsapp.net';
                 const emojis = ['❤️', '💸', '😇', '🍂', '💥', '💯', '🔥', '💫', '💎', '💗', '🤍', '🖤', '👀', '🙌', '🙆', '🚩', '🥰', '💐', '😎', '🤎', '✅', '🫀', '🧡', '😁', '😄', '🌸', '🕊️', '🌷', '⛅', '🌟', '🗿', '💜', '💙', '🌝', '🖤', '💚'];
                 const randomEmoji = emojis[Math.floor(Math.random() * emojis.length)];
                 if (mek.key.participant) {
@@ -466,6 +444,20 @@ async function connectToWA() {
         const reply = (teks) => {
             conn.sendMessage(from, { text: teks, contextInfo: globalContextInfo }, { quoted: mek })
         }
+        
+        //===================================================   
+        conn.decodeJid = jid => {
+            if (!jid) return jid;
+            if (/:\d+@/gi.test(jid)) {
+                let decode = jidDecode(jid) || {};
+                return (
+                    (decode.user &&
+                        decode.server &&
+                        decode.user + '@' + decode.server) ||
+                    jid
+                );
+            } else return jid;
+        };
         
         //===================================================
         conn.copyNForward = async (jid, message, forceForward = false, options = {}) => {
