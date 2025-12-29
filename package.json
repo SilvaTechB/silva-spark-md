@@ -8,10 +8,10 @@
     "stop": "pm2 stop silva-spark-md",
     "restart": "pm2 restart silva-spark-md"
   },
-   "dependencies": {
-    "@whiskeysockets/baileys": "npm:@fizzxydev/baileys-pro@^8.5.12",
+  "dependencies": {
+    "@whiskeysockets/baileys": "^6.7.9",
     "@adiwajshing/keyed-db": "^0.2.4",
-    "@dark-yasiya/yt-dl.js": "1.0.5",
+    "@dark-yasiya/yt-dl.js": "^1.0.5",
     "@ffmpeg-installer/ffmpeg": "^1.1.0",
     "pino": "^7.0.5",
     "pm2": "^6.0.8",
@@ -20,7 +20,7 @@
     "axios": "^1.2.5",
     "crypto-digest-sync": "^1.0.0",
     "crypto-js": "latest",
-    "file_size_url": "1.0.4",
+    "file_size_url": "^1.0.4",
     "fs-extra": "^11.1.0",
     "fs": "^0.0.1-security",
     "ffmpeg": "^0.0.4",
@@ -32,18 +32,17 @@
     "node-fetch": "^2.6.1",
     "btch-downloader": "^2.2.9",
     "megajs": "^1.1.0",
-    "wa_set_pkg": "1.0.5",
+    "wa_set_pkg": "^1.0.5",
     "wa-sticker-formatter": "^4.4.4",
-    "path": "^0.12.7",
     "vm": "^0.1.0",
     "cheerio": "^1.0.0-rc.12",
-    "ruhend-scraper" : "8.0.3",
+    "ruhend-scraper": "^8.0.3",
     "qrcode-terminal": "^0.12.0",
-    "wikipedia":"2.1.2",
-    "yt-search":"2.11.1",
-    "api-dylux":"1.8.5",
-    "@mrnima/tiktok-downloader":"1.0.0",
-    "@mrnima/facebook-downloader":"1.0.0",
-    "mrnima-moviedl":"1.0.0"
+    "wikipedia": "^2.1.2",
+    "yt-search": "^2.11.1",
+    "api-dylux": "^1.8.5",
+    "@mrnima/tiktok-downloader": "^1.0.0",
+    "@mrnima/facebook-downloader": "^1.0.0",
+    "mrnima-moviedl": "^1.0.0"
   }
 }
