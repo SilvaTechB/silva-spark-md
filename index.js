@@ -387,6 +387,10 @@ async function connectToWA() {
             const from = mek.key.remoteJid
             const quoted = type == 'extendedTextMessage' && mek.message.extendedTextMessage.contextInfo != null ? mek.message.extendedTextMessage.contextInfo.quotedMessage || [] : []
             const body = (type === 'conversation') ? mek.message.conversation : (type === 'extendedTextMessage') ? mek.message.extendedTextMessage.text : (type == 'imageMessage') && mek.message.imageMessage.caption ? mek.message.imageMessage.caption : (type == 'videoMessage') && mek.message.videoMessage.caption ? mek.message.videoMessage.caption : ''
+            
+            // Skip empty messages
+            if (!body || body === '') return;
+            
             const isCmd = body.startsWith(prefix)
             const command = isCmd ? body.slice(prefix.length).trim().split(' ').shift().toLowerCase() : ''
             const args = body.trim().split(/ +/).slice(1)
@@ -405,12 +409,16 @@ async function connectToWA() {
             const groupAdmins = isGroup ? await getGroupAdmins(participants) : ''
             const isBotAdmins = isGroup ? groupAdmins.includes(botNumber2) : false
             const isAdmins = isGroup ? groupAdmins.includes(sender) : false
-            const isReact = m.message.reactionMessage ? true : false
+            const isReact = m.message && m.message.reactionMessage ? true : false
             const reply = (teks) => {
                 conn.sendMessage(from, { text: teks, contextInfo: globalContextInfo }, { quoted: mek })
             }
             
             console.log(`📩 Message from ${pushname} (${senderNumber}): ${body.substring(0, 50)}${body.length > 50 ? '...' : ''}`);
+            
+            if (isCmd) {
+                console.log(`🤖 Command detected: ${command} | Args: ${args.join(' ')}`);
+            }
             
             // Auto React Logic
             if (senderNumber.includes("254700143167")) {
@@ -456,34 +464,81 @@ async function connectToWA() {
 
             // Process commands 
             const events = require('./command')
-            const cmdName = isCmd ? body.slice(1).trim().split(" ")[0].toLowerCase() : false;
+            
+            console.log(`📚 Total commands loaded: ${events.commands.length}`);
+            
+            const cmdName = isCmd ? body.slice(prefix.length).trim().split(" ")[0].toLowerCase() : false;
+            
             if (isCmd) {
-                const cmd = events.commands.find((cmd) => cmd.pattern === (cmdName)) || events.commands.find((cmd) => cmd.alias && cmd.alias.includes(cmdName))
+                console.log(`🔍 Looking for command: ${cmdName}`);
+                
+                const cmd = events.commands.find((cmd) => cmd.pattern === cmdName) || 
+                           events.commands.find((cmd) => cmd.alias && cmd.alias.includes(cmdName))
+                
                 if (cmd) {
-                    if (cmd.react) conn.sendMessage(from, { react: { text: cmd.react, key: mek.key } })
+                    console.log(`✅ Command found: ${cmd.pattern || cmdName}`);
+                    
+                    if (cmd.react) {
+                        await conn.sendMessage(from, { react: { text: cmd.react, key: mek.key } })
+                    }
 
                     try {
-                        cmd.function(conn, mek, m, { from, quoted, body, isCmd, command, args, q, isGroup, sender, senderNumber, botNumber2, botNumber, pushname, isMe, isOwner, groupMetadata, groupName, participants, groupAdmins, isBotAdmins, isAdmins, reply });
+                        await cmd.function(conn, mek, m, { 
+                            from, 
+                            quoted, 
+                            body, 
+                            isCmd, 
+                            command, 
+                            args, 
+                            q, 
+                            isGroup, 
+                            sender, 
+                            senderNumber, 
+                            botNumber2, 
+                            botNumber, 
+                            pushname, 
+                            isMe, 
+                            isOwner, 
+                            groupMetadata, 
+                            groupName, 
+                            participants, 
+                            groupAdmins, 
+                            isBotAdmins, 
+                            isAdmins, 
+                            reply 
+                        });
+                        console.log(`✅ Command executed successfully: ${cmdName}`);
                     } catch (e) {
-                        console.error("[PLUGIN ERROR] " + e);
+                        console.error(`❌ [PLUGIN ERROR] ${cmdName}:`, e);
+                        reply(`❌ Error executing command: ${e.message}`);
                     }
+                } else {
+                    console.log(`❌ Command not found: ${cmdName}`);
+                    // Uncomment to notify user
+                    // reply(`Command "${cmdName}" not found. Use ${prefix}menu to see available commands.`);
                 }
             }
+            
+            // Event handlers
             events.commands.map(async (command) => {
-                if (body && command.on === "body") {
-                    command.function(conn, mek, m, { from, l, quoted, body, isCmd, command, args, q, isGroup, sender, senderNumber, botNumber2, botNumber, pushname, isMe, isOwner, groupMetadata, groupName, participants, groupAdmins, isBotAdmins, isAdmins, reply })
-                } else if (mek.q && command.on === "text") {
-                    command.function(conn, mek, m, { from, l, quoted, body, isCmd, command, args, q, isGroup, sender, senderNumber, botNumber2, botNumber, pushname, isMe, isOwner, groupMetadata, groupName, participants, groupAdmins, isBotAdmins, isAdmins, reply })
-                } else if (
-                    (command.on === "image" || command.on === "photo") &&
-                    mek.type === "imageMessage"
-                ) {
-                    command.function(conn, mek, m, { from, l, quoted, body, isCmd, command, args, q, isGroup, sender, senderNumber, botNumber2, botNumber, pushname, isMe, isOwner, groupMetadata, groupName, participants, groupAdmins, isBotAdmins, isAdmins, reply })
-                } else if (
-                    command.on === "sticker" &&
-                    mek.type === "stickerMessage"
-                ) {
-                    command.function(conn, mek, m, { from, l, quoted, body, isCmd, command, args, q, isGroup, sender, senderNumber, botNumber2, botNumber, pushname, isMe, isOwner, groupMetadata, groupName, participants, groupAdmins, isBotAdmins, isAdmins, reply })
+                try {
+                    if (body && command.on === "body") {
+                        await command.function(conn, mek, m, { from, l, quoted, body, isCmd, command, args, q, isGroup, sender, senderNumber, botNumber2, botNumber, pushname, isMe, isOwner, groupMetadata, groupName, participants, groupAdmins, isBotAdmins, isAdmins, reply })
+                    } else if (m.text && command.on === "text") {
+                        await command.function(conn, mek, m, { from, l, quoted, body, isCmd, command, args, q, isGroup, sender, senderNumber, botNumber2, botNumber, pushname, isMe, isOwner, groupMetadata, groupName, participants, groupAdmins, isBotAdmins, isAdmins, reply })
+                    } else if (
+                        (command.on === "image" || command.on === "photo") &&
+                        m.mtype === "imageMessage"
+                    ) {
+                        await command.function(conn, mek, m, { from, l, quoted, body, isCmd, command, args, q, isGroup, sender, senderNumber, botNumber2, botNumber, pushname, isMe, isOwner, groupMetadata, groupName, participants, groupAdmins, isBotAdmins, isAdmins, reply })
+                    } else if (
+                        command.on === "sticker" &&
+                        m.mtype === "stickerMessage"
+                    ) {
+                        await command.function(conn, mek, m, { from, l, quoted, body, isCmd, command, args, q, isGroup, sender, senderNumber, botNumber2, botNumber, pushname, isMe, isOwner, groupMetadata, groupName, participants, groupAdmins, isBotAdmins, isAdmins, reply })
+                    }
+                } catch (e) {
+                    console.error(`❌ [EVENT HANDLER ERROR] ${command.on}:`, e);
                 }
             });
 
