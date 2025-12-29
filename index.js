@@ -235,12 +235,19 @@ async function connectToWA() {
                 }
             }
 
+            // ✅ IMPROVED STARTUP MESSAGE - Send text only, no video
             let up = `*Hello there ✦ Silva ✦ Spark ✦ MD ✦ User! 👋🏻* \n\n> This is a user friendly whatsapp bot created by Silva Tech Inc 🎊, Meet ✦ Silva ✦ Spark ✦ MD ✦ WhatsApp Bot.\n\n *Thanks for using ✦ Silva ✦ Spark ✦ MD ✦ 🚩* \n\n> follow WhatsApp Channel :- 💖\n \nhttps://whatsapp.com/channel/0029VaAkETLLY6d8qhLmZt2v\n\n- *YOUR PREFIX:* = ${prefix}\n\nDont forget to give star to repo ⬇️\n\nhttps://github.com/SilvaTechB/silva-spark-md\n\n> © Powered BY ✦ Silva ✦ Spark ✦ MD ✦ 🖤`;
-            conn.sendMessage(conn.user.id, { 
-                video: { url: `https://files.catbox.moe/2xxr9h.mp4` }, 
-                caption: up,
-                contextInfo: globalContextInfo 
-            })
+            
+            try {
+                // Send text message only to avoid download issues
+                await conn.sendMessage(conn.user.id, { 
+                    text: up,
+                    contextInfo: globalContextInfo 
+                });
+                botLogger.log('SUCCESS', '✅ Startup message sent');
+            } catch (e) {
+                botLogger.log('ERROR', `Failed to send startup message: ${e.message}`);
+            }
         }
     })
     
