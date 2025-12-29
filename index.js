@@ -144,10 +144,12 @@ async function connectToWA() {
     const { state, saveCreds } = await useMultiFileAuthState(__dirname + '/sessions/')
     var { version } = await fetchLatestBaileysVersion()
 
+    // FIXED: Use correct browser configuration format
     const conn = makeWASocket({
         logger: P({ level: 'silent' }),
         printQRInTerminal: false,
-        browser: Browsers.macOS("Firefox"),
+        // FIX: Use the correct browser string format
+        browser: ["Silva Spark MD", "Safari", "1.0.0"],
         syncFullHistory: true,
         auth: state,
         version
