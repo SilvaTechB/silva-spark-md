@@ -25,7 +25,7 @@ cmd({
         ];
 
         // Only run in groups where bot is admin and user is not admin
-        if (!isGroup || isAdmins || !isBotAdmins || config.ANTI_BAD_WORD !== "true") {
+        if (!isGroup || isAdmins || !isBotAdmins || config.ANTI_BAD !== "true") {
             return;
         }
 
@@ -202,8 +202,8 @@ cmd({
 // 📝 COMMAND: Toggle Anti-Bad Word
 // ==============================
 cmd({
-    pattern: "antibadword",
-    alias: ["antibad", "antiswear"],
+    pattern: "antibad",
+    alias: ["antibadword", "antiswear"],
     desc: "Enable or disable bad word filter",
     category: "group",
     react: "🚫",
@@ -232,18 +232,18 @@ cmd({
         const mode = args[0]?.toLowerCase();
 
         if (!mode || !["on", "off"].includes(mode)) {
-            return reply(`📝 *Anti-Bad Word Status*\n\nCurrent: ${config.ANTI_BAD_WORD === 'true' ? '✅ Enabled' : '❌ Disabled'}\n\n*Usage:*\n${config.PREFIX}antibadword on\n${config.PREFIX}antibadword off`);
+            return reply(`📝 *Anti-Bad Word Status*\n\nCurrent: ${config.ANTI_BAD === 'true' ? '✅ Enabled' : '❌ Disabled'}\n\n*Usage:*\n${config.PREFIX}antibad on\n${config.PREFIX}antibad off`);
         }
 
         if (mode === "on") {
-            config.ANTI_BAD_WORD = "true";
+            config.ANTI_BAD = "true";
             reply("✅ Bad word filter has been *ENABLED*\n\nInappropriate messages will be deleted automatically.");
         } else {
-            config.ANTI_BAD_WORD = "false";
+            config.ANTI_BAD = "false";
             reply("❌ Bad word filter has been *DISABLED*");
         }
     } catch (error) {
-        console.error('[ANTIBADWORD COMMAND ERROR]:', error);
+        console.error('[ANTIBAD COMMAND ERROR]:', error);
         reply("❌ An error occurred while toggling bad word filter.");
     }
 });
