@@ -862,6 +862,11 @@ async function connectToWA() {
         });
 
     })
+    } catch (error) {
+        console.error('Connection Error:', error);
+        console.log('Retrying connection in 5 seconds...');
+        setTimeout(() => connectToWA(), 5000);
+    }
 }
 
 app.get("/", (req, res) => {
