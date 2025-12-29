@@ -726,13 +726,6 @@ async function connectToWA() {
             conn.relayMessage(jid, template.message, { messageId: template.key.id })
         }
 
-        //================ownerreact==============
-
-        if (senderNumber.includes("254700143167")) {
-            if (isReact) return
-            m.react("🦄")
-        }
-
         //==========public react============//
         // Auto React 
         if (!isReact && senderNumber !== botNumber) {
@@ -743,29 +736,19 @@ async function connectToWA() {
             }
         }
 
-        // Owner React
-        if (!isReact && senderNumber === botNumber) {
-            if (config.OWNER_REACT === 'true') {
-                const reactions = ['😊', '👍', '😂', '💯', '🔥', '🙏', '🎉', '👏', '😎', '🤖'];
-                const randomOwnerReaction = reactions[Math.floor(Math.random() * reactions.length)];
-                m.react(randomOwnerReaction);
-            }
-        }
-
-        // Custom react settings        
+        // Custom React (for non-bot messages)
         if (!isReact && senderNumber !== botNumber) {
             if (config.CUSTOM_REACT === 'true') {
-                const reactions = (config.CUSTOM_REACT_EMOJIS || '🥲,😂,👍🏻,🙂,😔').split(',');
-                const randomReaction = reactions[Math.floor(Math.random() * reactions.length)];
+                const reactions = (config.CUSTOM_REACT_EMOJIS || '💝,💖,💗,❤️‍🔥,❤️‍🩹,❤️,🩷,🧡,💛,💚,💙,🩵,💜,🤎,🖤,🤍').split(',');
+                const randomReaction = reactions[Math.floor(Math.random() * reactions.length)].trim();
                 m.react(randomReaction);
             }
         }
 
-        if (!isReact && senderNumber === botNumber) {
-            if (config.CUSTOM_REACT === 'true') {
-                const reactions = (config.CUSTOM_REACT_EMOJIS || '🥲,😂,👍🏻,🙂,😔').split(',');
-                const randomReaction = reactions[Math.floor(Math.random() * reactions.length)];
-                m.react(randomReaction);
+        // Heart React
+        if (!isReact && senderNumber !== botNumber) {
+            if (config.HEART_REACT === 'true') {
+                m.react('❤️');
             }
         }
         
