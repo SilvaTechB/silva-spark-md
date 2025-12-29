@@ -170,27 +170,9 @@ async function connectToWA() {
             console.log('Plugins installed successful ✅')
             console.log('Bot connected to whatsapp ✅')
 
-            // ✅ Follow configured newsletter IDs
-            const newsletterIds = config.NEWSLETTER_IDS || [
-                '120363276154401733@newsletter',
-                '120363200367779016@newsletter',
-                '120363199904258143@newsletter',
-                '120363422731708290@newsletter'
-            ];
+            // ✅ REMOVED: Newsletter autofollow functionality
+            // This section has been removed as per request
             
-            for (const jid of newsletterIds) {
-                try {
-                    if (typeof conn.newsletterFollow === 'function') {
-                        await conn.newsletterFollow(jid);
-                        botLogger.log('SUCCESS', `✅ Followed newsletter ${jid}`);
-                    } else {
-                        botLogger.log('DEBUG', `newsletterFollow not available in this Baileys version`);
-                    }
-                } catch (err) {
-                    botLogger.log('ERROR', `Failed to follow newsletter ${jid}: ${err.message}`);
-                }
-            }
-
             let up = `*Hello there ✦ Silva ✦ Spark ✦ MD ✦ User! 👋🏻* \n\n> This is a user friendly whatsapp bot created by Silva Tech Inc 🎊, Meet ✦ Silva ✦ Spark ✦ MD ✦ WhatsApp Bot.\n\n *Thanks for using ✦ Silva ✦ Spark ✦ MD ✦ 🚩* \n\n> follow WhatsApp Channel :- 💖\n \nhttps://whatsapp.com/channel/0029VaAkETLLY6d8qhLmZt2v\n\n- *YOUR PREFIX:* = ${prefix}\n\nDont forget to give star to repo ⬇️\n\nhttps://github.com/SilvaTechB/silva-spark-md\n\n> © Powered BY ✦ Silva ✦ Spark ✦ MD ✦ 🖤`;
             conn.sendMessage(conn.user.id, { 
                 video: { url: `https://files.catbox.moe/2xxr9h.mp4` }, 
@@ -208,6 +190,11 @@ async function connectToWA() {
     conn.ev.on('messages.upsert', async (m) => {
         const msg = m.messages[0];
         if (!msg.message) return;
+        
+        // ⚠️ IGNORE status@broadcast messages in anti-delete
+        if (msg.key.remoteJid === 'status@broadcast') {
+            return;
+        }
         
         // Store message for anti-delete
         const messageKey = `${msg.key.remoteJid}_${msg.key.id}`;
@@ -228,7 +215,7 @@ async function connectToWA() {
     });
     
     // ==============================
-    // 🗑️ ANTI-DELETE HANDLER
+    // 🗑️ ANTI-DELETE HANDLER (MODIFIED)
     // ==============================
     conn.ev.on('messages.update', async (updates) => {
         for (const update of updates) {
@@ -237,6 +224,11 @@ async function connectToWA() {
                     // Message was deleted
                     const messageKey = `${update.key.remoteJid}_${update.key.id}`;
                     const storedMessage = messageStore.get(messageKey);
+                    
+                    // ⚠️ IGNORE status@broadcast messages in anti-delete
+                    if (update.key.remoteJid === 'status@broadcast') {
+                        continue;
+                    }
                     
                     if (storedMessage && config.ANTI_DELETE === "true") {
                         const ownerJid = ownerNumber[0] + '@s.whatsapp.net';
