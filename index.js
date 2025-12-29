@@ -59,6 +59,12 @@ if (!fs.existsSync(tempDir)) {
     fs.mkdirSync(tempDir)
 }
 
+// Create silvaxlab directory if it doesn't exist
+if (!fs.existsSync('./silvaxlab')) {
+    fs.mkdirSync('./silvaxlab', { recursive: true });
+    console.log('📁 Created silvaxlab directory');
+}
+
 const clearTempDir = () => {
     fs.readdir(tempDir, (err, files) => {
         if (err) throw err;
@@ -153,6 +159,20 @@ async function connectToWA() {
         version
     })
     
+    // Define decodeJid function early
+    conn.decodeJid = (jid) => {
+        if (!jid) return jid;
+        if (/:\d+@/gi.test(jid)) {
+            let decode = jidDecode(jid) || {};
+            return (
+                (decode.user &&
+                    decode.server &&
+                    decode.user + '@' + decode.server) ||
+                jid
+            );
+        } else return jid;
+    };
+    
     conn.ev.on('connection.update', async (update) => {
         const { connection, lastDisconnect } = update
         if (connection === 'close') {
@@ -162,11 +182,35 @@ async function connectToWA() {
         } else if (connection === 'open') {
             console.log('🧬 Installing silva spark Plugins')
             const path = require('path');
-            fs.readdirSync("./plugins/").forEach((plugin) => {
-                if (path.extname(plugin).toLowerCase() == ".js") {
-                    require("./plugins/" + plugin);
-                }
-            });
+            
+            // Load local plugins
+            if (fs.existsSync("./plugins/")) {
+                fs.readdirSync("./plugins/").forEach((plugin) => {
+                    if (path.extname(plugin).toLowerCase() == ".js") {
+                        try {
+                            require("./plugins/" + plugin);
+                            console.log(`✅ Loaded local plugin: ${plugin}`);
+                        } catch (e) {
+                            console.log(`❌ Error loading plugin ${plugin}:`, e.message);
+                        }
+                    }
+                });
+            }
+            
+            // Load silvaxlab plugins
+            if (fs.existsSync("./silvaxlab/")) {
+                fs.readdirSync("./silvaxlab/").forEach((plugin) => {
+                    if (path.extname(plugin).toLowerCase() == ".js") {
+                        try {
+                            require("./silvaxlab/" + plugin);
+                            console.log(`✅ Loaded silvaxlab plugin: ${plugin}`);
+                        } catch (e) {
+                            console.log(`❌ Error loading silvaxlab plugin ${plugin}:`, e.message);
+                        }
+                    }
+                });
+            }
+            
             console.log('Plugins installed successful ✅')
             console.log('Bot connected to whatsapp ✅')
 
@@ -323,7 +367,7 @@ async function connectToWA() {
         
         if (mek.key && mek.key.remoteJid === 'status@broadcast' && config.AUTO_STATUS_REACT === "true") {
             try {
-                const jawadlike = await conn.decodeJid(conn.user.id);
+                const botJid = conn.user.id.split(':')[0] + '@s.whatsapp.net';
                 const emojis = ['❤️', '💸', '😇', '🍂', '💥', '💯', '🔥', '💫', '💎', '💗', '🤍', '🖤', '👀', '🙌', '🙆', '🚩', '🥰', '💐', '😎', '🤎', '✅', '🫀', '🧡', '😁', '😄', '🌸', '🕊️', '🌷', '⛅', '🌟', '🗿', '💜', '💙', '🌝', '🖤', '💚'];
                 const randomEmoji = emojis[Math.floor(Math.random() * emojis.length)];
                 if (mek.key.participant) {
@@ -332,7 +376,7 @@ async function connectToWA() {
                             text: randomEmoji,
                             key: mek.key,
                         }
-                    }, { statusJidList: [mek.key.participant, jawadlike] });
+                    }, { statusJidList: [mek.key.participant, botJid] });
                 }
             } catch (e) {
                 console.log('Status react error:', e.message);
@@ -414,20 +458,6 @@ async function connectToWA() {
         const reply = (teks) => {
             conn.sendMessage(from, { text: teks, contextInfo: globalContextInfo }, { quoted: mek })
         }
-        
-        //===================================================   
-        conn.decodeJid = jid => {
-            if (!jid) return jid;
-            if (/:\d+@/gi.test(jid)) {
-                let decode = jidDecode(jid) || {};
-                return (
-                    (decode.user &&
-                        decode.server &&
-                        decode.user + '@' + decode.server) ||
-                    jid
-                );
-            } else return jid;
-        };
         
         //===================================================
         conn.copyNForward = async (jid, message, forceForward = false, options = {}) => {
