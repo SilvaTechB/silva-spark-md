@@ -152,11 +152,19 @@ async function connectToWA() {
 
     const conn = makeWASocket({
         logger: P({ level: 'silent' }),
-        printQRInTerminal: false,
+        printQRInTerminal: true,
         browser: Browsers.macOS("Firefox"),
-        syncFullHistory: true,
+        syncFullHistory: false,
         auth: state,
-        version
+        version,
+        markOnlineOnConnect: true,
+        generateHighQualityLinkPreview: true,
+        getMessage: async (key) => {
+            if (messageStore.has(`${key.remoteJid}_${key.id}`)) {
+                return messageStore.get(`${key.remoteJid}_${key.id}`).message;
+            }
+            return { conversation: '' };
+        }
     })
     
     // Define decodeJid function early
@@ -174,10 +182,19 @@ async function connectToWA() {
     };
     
     conn.ev.on('connection.update', async (update) => {
-        const { connection, lastDisconnect } = update
+        const { connection, lastDisconnect, qr } = update
+        
+        // Show QR code if needed
+        if (qr) {
+            console.log('QR Code received, scan to connect:');
+            qrcode.generate(qr, { small: true });
+        }
+        
         if (connection === 'close') {
-            if (lastDisconnect.error.output.statusCode !== DisconnectReason.loggedOut) {
-                connectToWA()
+            const shouldReconnect = lastDisconnect?.error?.output?.statusCode !== DisconnectReason.loggedOut;
+            console.log('Connection closed. Reconnecting:', shouldReconnect);
+            if (shouldReconnect) {
+                setTimeout(() => connectToWA(), 3000);
             }
         } else if (connection === 'open') {
             console.log('🧬 Installing silva spark Plugins')
@@ -214,40 +231,57 @@ async function connectToWA() {
             console.log('Plugins installed successful ✅')
             console.log('Bot connected to whatsapp ✅')
 
-            // ✅ Follow configured newsletter IDs
-            const newsletterIds = config.NEWSLETTER_IDS || [
-                '120363276154401733@newsletter',
-                '120363200367779016@newsletter',
-                '120363199904258143@newsletter',
-                '120363422731708290@newsletter'
-            ];
-            
-            for (const jid of newsletterIds) {
-                try {
-                    if (typeof conn.newsletterFollow === 'function') {
-                        await conn.newsletterFollow(jid);
-                        botLogger.log('SUCCESS', `✅ Followed newsletter ${jid}`);
-                    } else {
-                        botLogger.log('DEBUG', `newsletterFollow not available in this Baileys version`);
-                    }
-                } catch (err) {
-                    botLogger.log('ERROR', `Failed to follow newsletter ${jid}: ${err.message}`);
-                }
-            }
+            // ✅ SEND STARTUP MESSAGE WITH DELAY
+            setTimeout(async () => {
+                const startupMessage = `╭━━━〔 *SILVA SPARK MD* 〕━━━⬣
+┃✨ *Bot Successfully Connected!*
+┃
+┃👋 Hello, I'm Silva Spark MD
+┃🤖 WhatsApp Bot by Silva Tech Inc
+┃
+┃📱 *Bot Info:*
+┃├ Prefix: ${prefix}
+┃├ Mode: ${config.MODE || 'public'}
+┃└ Version: 7.0.0
+┃
+┃🔗 *Links:*
+┃├ Channel: https://whatsapp.com/channel/0029VaAkETLLY6d8qhLmZt2v
+┃└ GitHub: https://github.com/SilvaTechB/silva-spark-md
+┃
+┃💝 Thanks for using Silva Spark MD!
+╰━━━━━━━━━━━━━━━━━⬣
 
-            // ✅ IMPROVED STARTUP MESSAGE - Send text only, no video
-            let up = `*Hello there ✦ Silva ✦ Spark ✦ MD ✦ User! 👋🏻* \n\n> This is a user friendly whatsapp bot created by Silva Tech Inc 🎊, Meet ✦ Silva ✦ Spark ✦ MD ✦ WhatsApp Bot.\n\n *Thanks for using ✦ Silva ✦ Spark ✦ MD ✦ 🚩* \n\n> follow WhatsApp Channel :- 💖\n \nhttps://whatsapp.com/channel/0029VaAkETLLY6d8qhLmZt2v\n\n- *YOUR PREFIX:* = ${prefix}\n\nDont forget to give star to repo ⬇️\n\nhttps://github.com/SilvaTechB/silva-spark-md\n\n> © Powered BY ✦ Silva ✦ Spark ✦ MD ✦ 🖤`;
-            
-            try {
-                // Send text message only to avoid download issues
-                await conn.sendMessage(conn.user.id, { 
-                    text: up,
-                    contextInfo: globalContextInfo 
-                });
-                botLogger.log('SUCCESS', '✅ Startup message sent');
-            } catch (e) {
-                botLogger.log('ERROR', `Failed to send startup message: ${e.message}`);
-            }
+> © 2025 Silva Tech Inc. All rights reserved.`;
+                
+                try {
+                    // Get bot's own JID (remove :XX part if present)
+                    const botJid = conn.user.id.split(':')[0] + '@s.whatsapp.net';
+                    botLogger.log('INFO', `Sending startup message to: ${botJid}`);
+                    
+                    // Send simple text message
+                    const sent = await conn.sendMessage(botJid, { 
+                        text: startupMessage
+                    });
+                    
+                    if (sent) {
+                        botLogger.log('SUCCESS', '✅ Startup message sent successfully!');
+                        console.log('\n' + startupMessage + '\n');
+                    }
+                    
+                } catch (e) {
+                    botLogger.log('ERROR', `Failed to send startup message: ${e.message}`);
+                    console.error('Full error:', e);
+                    
+                    // Try alternative method
+                    try {
+                        console.log('Trying alternative send method...');
+                        await conn.sendMessage(conn.user.id, { text: '✅ Silva Spark MD is now online!' });
+                        console.log('Alternative message sent!');
+                    } catch (e2) {
+                        console.error('Alternative method also failed:', e2.message);
+                    }
+                }
+            }, 3000); // Wait 3 seconds after connection
         }
     })
     
