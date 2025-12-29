@@ -97,33 +97,43 @@ async function loadSession() {
             fs.mkdirSync('./sessions', { recursive: true });
         }
         
-        // Clean old sessions if needed
-        if (fs.existsSync(credsPath)) {
-            try {
-                fs.unlinkSync(credsPath);
-                botLogger.log('INFO', "♻️ Old session removed");
-            } catch (e) {
-                // Ignore error
-            }
-        }
-        
         if (!config.SESSION_ID || typeof config.SESSION_ID !== 'string') {
-            botLogger.log('WARNING', "SESSION_ID missing, using QR");
+            botLogger.log('WARNING', "⚠️ SESSION_ID missing or invalid");
+            botLogger.log('INFO', "📱 Please scan QR code to connect");
             return false;
         }
         
         const [header, b64data] = config.SESSION_ID.split('~');
         if (header !== "Silva" || !b64data) {
-            botLogger.log('ERROR', "Invalid session format");
+            botLogger.log('ERROR', "❌ Invalid session format. Expected: Silva~...");
+            botLogger.log('INFO', "📱 Falling back to QR code");
             return false;
         }
         
-        const cleanB64 = b64data.replace(/\.\.\./g, '');
-        const compressedData = Buffer.from(cleanB64, 'base64');
-        const decompressedData = zlib.gunzipSync(compressedData);
-        fs.writeFileSync(credsPath, decompressedData, "utf8");
-        botLogger.log('SUCCESS', "✅ Session loaded successfully");
-        return true;
+        try {
+            const cleanB64 = b64data.replace(/\.\.\./g, '');
+            const compressedData = Buffer.from(cleanB64, 'base64');
+            const decompressedData = zlib.gunzipSync(compressedData);
+            fs.writeFileSync(credsPath, decompressedData, "utf8");
+            botLogger.log('SUCCESS', "✅ Session loaded successfully");
+            return true;
+        } catch (decompressError) {
+            botLogger.log('ERROR', "❌ Failed to decompress session: " + decompressError.message);
+            botLogger.log('INFO', "🔄 Deleting corrupted session and using QR code");
+            
+            // Delete corrupted session
+            if (fs.existsSync(credsPath)) {
+                fs.unlinkSync(credsPath);
+            }
+            if (fs.existsSync('./sessions')) {
+                const files = fs.readdirSync('./sessions');
+                files.forEach(file => {
+                    fs.unlinkSync(`./sessions/${file}`);
+                });
+            }
+            
+            return false;
+        }
     } catch (e) {
         botLogger.log('ERROR', "Session Error: " + e.message);
         return false;
@@ -147,17 +157,24 @@ async function connectToWA() {
     // Load session before connecting
     await loadSession();
     
-    const { state, saveCreds } = await useMultiFileAuthState(__dirname + '/sessions/')
-    var { version } = await fetchLatestBaileysVersion()
+    try {
+        const { state, saveCreds } = await useMultiFileAuthState(__dirname + '/sessions/')
+        var { version } = await fetchLatestBaileysVersion()
 
-    const conn = makeWASocket({
-        logger: P({ level: 'silent' }),
-        printQRInTerminal: false,
-        browser: Browsers.macOS("Firefox"),
-        syncFullHistory: true,
-        auth: state,
-        version
-    })
+        const conn = makeWASocket({
+            logger: P({ level: 'silent' }),
+            printQRInTerminal: true,
+            browser: Browsers.macOS("Firefox"),
+            syncFullHistory: false,
+            auth: state,
+            version,
+            getMessage: async (key) => {
+                if (messageStore.has(`${key.remoteJid}_${key.id}`)) {
+                    return messageStore.get(`${key.remoteJid}_${key.id}`).message;
+                }
+                return { conversation: '' };
+            }
+        })
     
     // Define decodeJid function early
     conn.decodeJid = (jid) => {
@@ -183,10 +200,23 @@ async function connectToWA() {
     };
     
     conn.ev.on('connection.update', async (update) => {
-        const { connection, lastDisconnect } = update
+        const { connection, lastDisconnect, qr } = update
+        
+        if (qr) {
+            console.log('QR Code received, scan with WhatsApp:');
+        }
+        
         if (connection === 'close') {
-            if (lastDisconnect.error.output.statusCode !== DisconnectReason.loggedOut) {
-                connectToWA()
+            const shouldReconnect = lastDisconnect?.error?.output?.statusCode !== DisconnectReason.loggedOut;
+            console.log('Connection closed. Reason:', lastDisconnect?.error?.output?.statusCode);
+            console.log('Reconnecting:', shouldReconnect);
+            
+            if (shouldReconnect) {
+                console.log('Attempting to reconnect...');
+                setTimeout(() => connectToWA(), 3000);
+            } else {
+                console.log('Logged out. Please scan QR code again.');
+                console.log('Delete sessions folder and restart bot with new SESSION_ID');
             }
         } else if (connection === 'open') {
             console.log('🧬 Loading Silva Spark MD Plugins from silvaxlab')
@@ -260,24 +290,30 @@ async function connectToWA() {
     // 📥 STORE MESSAGES FOR ANTI-DELETE
     // ==============================
     conn.ev.on('messages.upsert', async (m) => {
-        const msg = m.messages[0];
-        if (!msg.message) return;
-        
-        // Store message for anti-delete
-        const messageKey = `${msg.key.remoteJid}_${msg.key.id}`;
-        messageStore.set(messageKey, {
-            message: msg,
-            sender: msg.key.participant || msg.key.remoteJid,
-            chat: msg.key.remoteJid,
-            timestamp: Date.now()
-        });
-        
-        // Clean old messages (older than 24 hours)
-        const oneDayAgo = Date.now() - (24 * 60 * 60 * 1000);
-        for (const [key, value] of messageStore.entries()) {
-            if (value.timestamp < oneDayAgo) {
-                messageStore.delete(key);
+        try {
+            const msg = m.messages[0];
+            if (!msg.message) return;
+            
+            // Store message for anti-delete (ignore status)
+            if (msg.key.remoteJid !== 'status@broadcast') {
+                const messageKey = `${msg.key.remoteJid}_${msg.key.id}`;
+                messageStore.set(messageKey, {
+                    message: msg,
+                    sender: msg.key.participant || msg.key.remoteJid,
+                    chat: msg.key.remoteJid,
+                    timestamp: Date.now()
+                });
             }
+            
+            // Clean old messages (older than 24 hours)
+            const oneDayAgo = Date.now() - (24 * 60 * 60 * 1000);
+            for (const [key, value] of messageStore.entries()) {
+                if (value.timestamp < oneDayAgo) {
+                    messageStore.delete(key);
+                }
+            }
+        } catch (e) {
+            console.log('Message store error:', e.message);
         }
     });
     
