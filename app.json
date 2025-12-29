@@ -1,199 +1,201 @@
 {
   "name": "silva-spark-md",
-  "description": "Javascript WhatsApp bot made by Silva.",
-  "keywords": ["silva-spark-md"],
+  "description": "Javascript WhatsApp bot made by Silva Tech Inc.",
+  "keywords": ["silva-spark-md", "whatsapp-bot", "baileys"],
   "success_url": "/",
-
-    "stack": "container",
+  "stack": "heroku-24",
+  
   "env": {
     "SESSION_ID": {
-      "description": "Put the session-id here.",
+      "description": "Put your session-id here (format: Silva~xxxxx).",
       "required": true,
       "value": ""
-    },  
-    
-    "ALIVE_IMG": {
-      "description": "paste your image url if you don't have you can use this public url.",
-      "required": false,
-      "value": "https://i.ibb.co/BVt9McxS/photo-2025-06-15-12-14-29-7516148628621099032.jpg"
-    }, 
-    
-    "LIVE_MSG": {
-      "description": "paste your alive message hear.",
-      "required": false,
-      "value": "> SILVA SPARK IS SPARKING ACTIVE AND ALIVE⚡"
-    },
-    "ANTIDELETE_PRIVATE": {
-      "description": "when someone deletes a message on dm the bot restores it.",
-      "required": true,
-      "value": "true"
-    },
-    "ANTIDELETE_GROUP": {
-      "description": "when someone deletes a message in group the bot restores it.",
-      "required": true,
-      "value": "true"
     },
     
     "PREFIX": {
-      "description": "paste your bot prefix note! Don't apply null prefix.",
-      "required": false,
+      "description": "Bot command prefix (recommended: . or !) but you can use any.",
+      "required": true,
       "value": "."
     },
     
     "MODE": {
-      "description": "select your bot work type public-private-inbox-group.",
-      "required": false,
+      "description": "Bot work mode: public, private, inbox, or groups.",
+      "required": true,
       "value": "public"
-      
-    },
-
-    "AUTO_STATUS_REACT": {
-      "description": "Make it true if want auto status react.",
-      "required": false,
-      "value": "true"  
     },
     
-    
-    "ALWAYS_ONLINE": {
-      "description": "Make it true if want always online.",
-      "required": false,
-      "value": "false"  
-    },    
-  
-    "AUTO_VOICE": {
-      "description": "Make it true if want automatic voice reply .",
-      "required": false,
-      "value": "false"
-    }, 
-
-    "AUTO_REPLY": {
-      "description": "Make it true if you want automatic reply.",
-      "required": false,
-      "value": "false"
-    }, 
-
-    "AUTO_STICKER": {
-      "description": "Make it true if you want automatic sticker.",
-      "required": false,
-      "value": "false"
-    }, 
-
-
-    "AUTO_STATUS_SEEN": {
-      "description": "Make it true for automatic status seen.",
-      "required": true,
-      "value": "true"
-    }, 
-
-    "AUTO_STATUS_REPLY": {
-      "description": "Make it true for auto reply msg on status seen.",
-      "required": true,
-      "value": "false"
-    }, 
-
-    "AUTO_STATUS__MSG": {
-      "description": "Type custom message on status reply",
-      "required": true,
-      "value": "*🎉👀 Seen by Silva Spark MD 🚀🔥*"
-    }, 
-
-    "OWNER_NAME": {
-      "description": "Type Bot Owner Name.",
-      "required": false,
-      "value": "Silva Spark"
-}, 
-
-    "OWNER_NUMBER": {
-      "description": "put the owner number for bot.",
-      "required": false,
-      "value": "254700143167"
-
-    }, 
-
     "BOT_NAME": {
-      "description": "Type here the bot name.",
+      "description": "Your bot's display name.",
       "required": false,
       "value": "✦ Silva ✦ Spark ✦ MD ✦"
-
-      }, 
-
-    "ANTI_LINK": {
-      "description": "Make it true if you want bot auto remove group link.",
-      "required": true,
-      "value": "true"
-      
     },
     
-    "ANTI_BAD": {
-      "description": "Make it true if you want bot auto delete bad words.",
-      "required": false,
-      "value": "false"
-    }, 
-
-     "DESCRIPTION": {
-      "description": "add caption for menu and other",
-      "required": false,
+    "OWNER_NAME": {
+      "description": "Bot owner's name.",
+      "required": true,
+      "value": "Silva Spark"
+    },
+    
+    "OWNER_NUMBER": {
+      "description": "Bot owner's WhatsApp number (with country code, no +).",
+      "required": true,
+      "value": "254700143167"
+    },
+    
+    "DESCRIPTION": {
+      "description": "Bot description for menu and captions.",
+      "required": true,
       "value": "*© ✦ Silva ✦ Spark ✦ MD ✦*"
     },
-
-      "DELETE_LINKS": {
-      "description": "remove links from group automatically without removing member",
+    
+    "ALIVE_IMG": {
+      "description": "Image URL for alive message.",
+      "required": false,
+      "value": "https://i.ibb.co/BVt9McxS/photo-2025-06-15-12-14-29-7516148628621099032.jpg"
+    },
+    
+    "LIVE_MSG": {
+      "description": "Custom alive message text.",
+      "required": true,
+      "value": "> SILVA SPARK IS SPARKING ACTIVE AND ALIVE⚡"
+    },
+    
+    "ALWAYS_ONLINE": {
+      "description": "Keep bot always online (true/false).",
+      "required": true,
+      "value": "true"
+    },
+    
+    "PUBLIC_MODE": {
+      "description": "Enable public mode (true/false).",
+      "required": false,
+      "value": "true"
+    },
+    
+    "READ_MESSAGE": {
+      "description": "Auto-read all messages (true/false).",
+      "required": false,
+      "value": "false"
+    },
+    
+    "AUTO_TYPING": {
+      "description": "Show typing indicator automatically (true/false).",
       "required": false,
       "value": "true"
     },
     
     "AUTO_RECORDING": {
-      "description": "Make it true if you want auto recoding.",
+      "description": "Show recording indicator automatically (true/false).",
       "required": false,
       "value": "false"
     },
-
-    "AUTO_TYPING": {
-      "description": "Make it true if you want auto typing.",
-      "required": false,
-      "value": "true"
-    },
-
+    
     "AUTO_REACT": {
-      "description": "Make it true if you want react on every message.",
+      "description": "React to all messages automatically (true/false).",
       "required": false,
       "value": "false"
     },
-
-    "OWNER_REACT": {
-      "description": "Make it true if you only want react on Owner Massages.",
+    
+    "HEART_REACT": {
+      "description": "Only send ❤️ reactions (true/false).",
       "required": false,
       "value": "false"
-      
-    }, 
+    },
     
     "CUSTOM_REACT": {
-      "description": "Make it true if you want custom reactions.",
+      "description": "Use custom emoji reactions (true/false).",
       "required": false,
       "value": "false"
-      
-    }, 
+    },
     
     "CUSTOM_REACT_EMOJIS": {
-      "description": "put here custom react react emojis.",
+      "description": "Custom reaction emojis (comma-separated).",
       "required": false,
       "value": "💝,💖,💗,❤️‍🔥,❤️‍🩹,❤️,🩷,🧡,💛,💚,💙,🩵,💜,🤎,🖤,🩶,🤍"
-    }, 
-
-
-    "READ_MESSAGE": {
-      "description": "Make it true if you want bot read your all sms just now.",
+    },
+    
+    "AUTO_STATUS_SEEN": {
+      "description": "Auto-view all status updates (true/false).",
+      "required": true,
+      "value": "true"
+    },
+    
+    "AUTO_STATUS_REACT": {
+      "description": "Auto-react to status updates (true/false).",
+      "required": true,
+      "value": "true"
+    },
+    
+    "AUTO_STATUS_REPLY": {
+      "description": "Auto-reply to status updates (true/false).",
+      "required": true,
+      "value": "false"
+    },
+    
+    "AUTO_STATUS__MSG": {
+      "description": "Custom message for status auto-reply.",
+      "required": true,
+      "value": "*🎉👀 Seen by Silva Spark MD 🚀🔥*"
+    },
+    
+    "AUTO_VOICE": {
+      "description": "Send automatic voice replies (true/false).",
+      "required": true,
+      "value": "false"
+    },
+    
+    "AUTO_STICKER": {
+      "description": "Send automatic stickers (true/false).",
+      "required": true,
+      "value": "false"
+    },
+    
+    "AUTO_REPLY": {
+      "description": "Send automatic text replies (true/false).",
+      "required": true,
+      "value": "false"
+    },
+    
+    "ANTI_LINK": {
+      "description": "Block links and remove users in groups (true/false).",
+      "required": true,
+      "value": "false"
+    },
+    
+    "DELETE_LINKS": {
+      "description": "Delete links without removing members (true/false).",
       "required": false,
       "value": "false"
+    },
+    
+    "ANTI_BAD": {
+      "description": "Filter and delete bad words (true/false).",
+      "required": false,
+      "value": "false"
+    },
+    
+    "ANTI_DELETE": {
+      "description": "Forward deleted messages to owner (true/false).",
+      "required": true,
+      "value": "true"
+    },
+    
+    "ANTI_DEL_PATH": {
+      "description": "Where to send deleted messages: 'log' (owner) or 'same' (original chat).",
+      "required": false,
+      "value": "log"
+    },
+    
+    "ANTI_VV": {
+      "description": "Forward view-once messages to owner (true/false).",
+      "required": true,
+      "value": "false"
     }
-
-},
-
-     "buildpacks": [
-        {
-            "url": "https://github.com/heroku/heroku-buildpack-nodejs.git"
-        }
-     ],
-  "stack": "heroku-24"
-}
+  },
   
+  "buildpacks": [
+    {
+      "url": "https://github.com/heroku/heroku-buildpack-nodejs.git"
+    }
+  ]
+}
