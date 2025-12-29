@@ -62,7 +62,7 @@ if (!fs.existsSync(tempDir)) {
 // Create silvaxlab directory if it doesn't exist
 if (!fs.existsSync('./silvaxlab')) {
     fs.mkdirSync('./silvaxlab', { recursive: true });
-    console.log('📁 Created silvaxlab directory');
+    console.log('📁 Created silvaxlab directory for plugins');
 }
 
 const clearTempDir = () => {
@@ -189,38 +189,39 @@ async function connectToWA() {
                 connectToWA()
             }
         } else if (connection === 'open') {
-            console.log('🧬 Installing silva spark Plugins')
+            console.log('🧬 Loading Silva Spark MD Plugins from silvaxlab')
             const path = require('path');
             
-            // Load local plugins
-            if (fs.existsSync("./plugins/")) {
-                fs.readdirSync("./plugins/").forEach((plugin) => {
-                    if (path.extname(plugin).toLowerCase() == ".js") {
-                        try {
-                            require("./plugins/" + plugin);
-                            console.log(`✅ Loaded local plugin: ${plugin}`);
-                        } catch (e) {
-                            console.log(`❌ Error loading plugin ${plugin}:`, e.message);
-                        }
-                    }
-                });
-            }
-            
-            // Load silvaxlab plugins
+            // Load plugins from silvaxlab directory only
             if (fs.existsSync("./silvaxlab/")) {
-                fs.readdirSync("./silvaxlab/").forEach((plugin) => {
+                const plugins = fs.readdirSync("./silvaxlab/");
+                let loadedCount = 0;
+                let failedCount = 0;
+                
+                plugins.forEach((plugin) => {
                     if (path.extname(plugin).toLowerCase() == ".js") {
                         try {
                             require("./silvaxlab/" + plugin);
-                            console.log(`✅ Loaded silvaxlab plugin: ${plugin}`);
+                            console.log(`✅ Loaded: ${plugin}`);
+                            loadedCount++;
                         } catch (e) {
-                            console.log(`❌ Error loading silvaxlab plugin ${plugin}:`, e.message);
+                            console.log(`❌ Failed to load ${plugin}:`, e.message);
+                            failedCount++;
                         }
                     }
                 });
+                
+                console.log(`\n📊 Plugin Summary:`);
+                console.log(`   ✅ Loaded: ${loadedCount}`);
+                if (failedCount > 0) console.log(`   ❌ Failed: ${failedCount}`);
+                console.log(`   📁 Total: ${loadedCount + failedCount}\n`);
+            } else {
+                console.log('⚠️ silvaxlab directory not found. Creating it...');
+                fs.mkdirSync('./silvaxlab', { recursive: true });
+                console.log('✅ silvaxlab directory created. Add your plugins there.');
             }
             
-            console.log('Plugins installed successful ✅')
+            console.log('Plugins installation complete ✅')
             console.log('Bot connected to whatsapp ✅')
 
             // ✅ Follow configured newsletter IDs
@@ -287,6 +288,11 @@ async function connectToWA() {
         for (const update of updates) {
             try {
                 if (update.update.message === null) {
+                    // Ignore status@broadcast deletes
+                    if (update.key.remoteJid === 'status@broadcast') {
+                        continue;
+                    }
+                    
                     // Message was deleted
                     const messageKey = `${update.key.remoteJid}_${update.key.id}`;
                     const storedMessage = messageStore.get(messageKey);
