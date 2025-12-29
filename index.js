@@ -62,7 +62,7 @@ if (!fs.existsSync(tempDir)) {
 // Create silvaxlab directory if it doesn't exist
 if (!fs.existsSync('./silvaxlab')) {
     fs.mkdirSync('./silvaxlab', { recursive: true });
-    console.log('📁 Created silvaxlab directory for plugins');
+    console.log('📁 Created silvaxlab directory');
 }
 
 const clearTempDir = () => {
@@ -97,43 +97,33 @@ async function loadSession() {
             fs.mkdirSync('./sessions', { recursive: true });
         }
         
+        // Clean old sessions if needed
+        if (fs.existsSync(credsPath)) {
+            try {
+                fs.unlinkSync(credsPath);
+                botLogger.log('INFO', "♻️ Old session removed");
+            } catch (e) {
+                // Ignore error
+            }
+        }
+        
         if (!config.SESSION_ID || typeof config.SESSION_ID !== 'string') {
-            botLogger.log('WARNING', "⚠️ SESSION_ID missing or invalid");
-            botLogger.log('INFO', "📱 Please scan QR code to connect");
+            botLogger.log('WARNING', "SESSION_ID missing, using QR");
             return false;
         }
         
         const [header, b64data] = config.SESSION_ID.split('~');
         if (header !== "Silva" || !b64data) {
-            botLogger.log('ERROR', "❌ Invalid session format. Expected: Silva~...");
-            botLogger.log('INFO', "📱 Falling back to QR code");
+            botLogger.log('ERROR', "Invalid session format");
             return false;
         }
         
-        try {
-            const cleanB64 = b64data.replace(/\.\.\./g, '');
-            const compressedData = Buffer.from(cleanB64, 'base64');
-            const decompressedData = zlib.gunzipSync(compressedData);
-            fs.writeFileSync(credsPath, decompressedData, "utf8");
-            botLogger.log('SUCCESS', "✅ Session loaded successfully");
-            return true;
-        } catch (decompressError) {
-            botLogger.log('ERROR', "❌ Failed to decompress session: " + decompressError.message);
-            botLogger.log('INFO', "🔄 Deleting corrupted session and using QR code");
-            
-            // Delete corrupted session
-            if (fs.existsSync(credsPath)) {
-                fs.unlinkSync(credsPath);
-            }
-            if (fs.existsSync('./sessions')) {
-                const files = fs.readdirSync('./sessions');
-                files.forEach(file => {
-                    fs.unlinkSync(`./sessions/${file}`);
-                });
-            }
-            
-            return false;
-        }
+        const cleanB64 = b64data.replace(/\.\.\./g, '');
+        const compressedData = Buffer.from(cleanB64, 'base64');
+        const decompressedData = zlib.gunzipSync(compressedData);
+        fs.writeFileSync(credsPath, decompressedData, "utf8");
+        botLogger.log('SUCCESS', "✅ Session loaded successfully");
+        return true;
     } catch (e) {
         botLogger.log('ERROR', "Session Error: " + e.message);
         return false;
@@ -157,24 +147,17 @@ async function connectToWA() {
     // Load session before connecting
     await loadSession();
     
-    try {
-        const { state, saveCreds } = await useMultiFileAuthState(__dirname + '/sessions/')
-        var { version } = await fetchLatestBaileysVersion()
+    const { state, saveCreds } = await useMultiFileAuthState(__dirname + '/sessions/')
+    var { version } = await fetchLatestBaileysVersion()
 
-        const conn = makeWASocket({
-            logger: P({ level: 'silent' }),
-            printQRInTerminal: true,
-            browser: Browsers.macOS("Firefox"),
-            syncFullHistory: false,
-            auth: state,
-            version,
-            getMessage: async (key) => {
-                if (messageStore.has(`${key.remoteJid}_${key.id}`)) {
-                    return messageStore.get(`${key.remoteJid}_${key.id}`).message;
-                }
-                return { conversation: '' };
-            }
-        })
+    const conn = makeWASocket({
+        logger: P({ level: 'silent' }),
+        printQRInTerminal: false,
+        browser: Browsers.macOS("Firefox"),
+        syncFullHistory: true,
+        auth: state,
+        version
+    })
     
     // Define decodeJid function early
     conn.decodeJid = (jid) => {
@@ -200,58 +183,44 @@ async function connectToWA() {
     };
     
     conn.ev.on('connection.update', async (update) => {
-        const { connection, lastDisconnect, qr } = update
-        
-        if (qr) {
-            console.log('QR Code received, scan with WhatsApp:');
-        }
-        
+        const { connection, lastDisconnect } = update
         if (connection === 'close') {
-            const shouldReconnect = lastDisconnect?.error?.output?.statusCode !== DisconnectReason.loggedOut;
-            console.log('Connection closed. Reason:', lastDisconnect?.error?.output?.statusCode);
-            console.log('Reconnecting:', shouldReconnect);
-            
-            if (shouldReconnect) {
-                console.log('Attempting to reconnect...');
-                setTimeout(() => connectToWA(), 3000);
-            } else {
-                console.log('Logged out. Please scan QR code again.');
-                console.log('Delete sessions folder and restart bot with new SESSION_ID');
+            if (lastDisconnect.error.output.statusCode !== DisconnectReason.loggedOut) {
+                connectToWA()
             }
         } else if (connection === 'open') {
-            console.log('🧬 Loading Silva Spark MD Plugins from silvaxlab')
+            console.log('🧬 Installing silva spark Plugins')
             const path = require('path');
             
-            // Load plugins from silvaxlab directory only
-            if (fs.existsSync("./silvaxlab/")) {
-                const plugins = fs.readdirSync("./silvaxlab/");
-                let loadedCount = 0;
-                let failedCount = 0;
-                
-                plugins.forEach((plugin) => {
+            // Load local plugins
+            if (fs.existsSync("./plugins/")) {
+                fs.readdirSync("./plugins/").forEach((plugin) => {
                     if (path.extname(plugin).toLowerCase() == ".js") {
                         try {
-                            require("./silvaxlab/" + plugin);
-                            console.log(`✅ Loaded: ${plugin}`);
-                            loadedCount++;
+                            require("./plugins/" + plugin);
+                            console.log(`✅ Loaded local plugin: ${plugin}`);
                         } catch (e) {
-                            console.log(`❌ Failed to load ${plugin}:`, e.message);
-                            failedCount++;
+                            console.log(`❌ Error loading plugin ${plugin}:`, e.message);
                         }
                     }
                 });
-                
-                console.log(`\n📊 Plugin Summary:`);
-                console.log(`   ✅ Loaded: ${loadedCount}`);
-                if (failedCount > 0) console.log(`   ❌ Failed: ${failedCount}`);
-                console.log(`   📁 Total: ${loadedCount + failedCount}\n`);
-            } else {
-                console.log('⚠️ silvaxlab directory not found. Creating it...');
-                fs.mkdirSync('./silvaxlab', { recursive: true });
-                console.log('✅ silvaxlab directory created. Add your plugins there.');
             }
             
-            console.log('Plugins installation complete ✅')
+            // Load silvaxlab plugins
+            if (fs.existsSync("./silvaxlab/")) {
+                fs.readdirSync("./silvaxlab/").forEach((plugin) => {
+                    if (path.extname(plugin).toLowerCase() == ".js") {
+                        try {
+                            require("./silvaxlab/" + plugin);
+                            console.log(`✅ Loaded silvaxlab plugin: ${plugin}`);
+                        } catch (e) {
+                            console.log(`❌ Error loading silvaxlab plugin ${plugin}:`, e.message);
+                        }
+                    }
+                });
+            }
+            
+            console.log('Plugins installed successful ✅')
             console.log('Bot connected to whatsapp ✅')
 
             // ✅ Follow configured newsletter IDs
@@ -290,30 +259,24 @@ async function connectToWA() {
     // 📥 STORE MESSAGES FOR ANTI-DELETE
     // ==============================
     conn.ev.on('messages.upsert', async (m) => {
-        try {
-            const msg = m.messages[0];
-            if (!msg.message) return;
-            
-            // Store message for anti-delete (ignore status)
-            if (msg.key.remoteJid !== 'status@broadcast') {
-                const messageKey = `${msg.key.remoteJid}_${msg.key.id}`;
-                messageStore.set(messageKey, {
-                    message: msg,
-                    sender: msg.key.participant || msg.key.remoteJid,
-                    chat: msg.key.remoteJid,
-                    timestamp: Date.now()
-                });
+        const msg = m.messages[0];
+        if (!msg.message) return;
+        
+        // Store message for anti-delete
+        const messageKey = `${msg.key.remoteJid}_${msg.key.id}`;
+        messageStore.set(messageKey, {
+            message: msg,
+            sender: msg.key.participant || msg.key.remoteJid,
+            chat: msg.key.remoteJid,
+            timestamp: Date.now()
+        });
+        
+        // Clean old messages (older than 24 hours)
+        const oneDayAgo = Date.now() - (24 * 60 * 60 * 1000);
+        for (const [key, value] of messageStore.entries()) {
+            if (value.timestamp < oneDayAgo) {
+                messageStore.delete(key);
             }
-            
-            // Clean old messages (older than 24 hours)
-            const oneDayAgo = Date.now() - (24 * 60 * 60 * 1000);
-            for (const [key, value] of messageStore.entries()) {
-                if (value.timestamp < oneDayAgo) {
-                    messageStore.delete(key);
-                }
-            }
-        } catch (e) {
-            console.log('Message store error:', e.message);
         }
     });
     
@@ -324,11 +287,6 @@ async function connectToWA() {
         for (const update of updates) {
             try {
                 if (update.update.message === null) {
-                    // Ignore status@broadcast deletes
-                    if (update.key.remoteJid === 'status@broadcast') {
-                        continue;
-                    }
-                    
                     // Message was deleted
                     const messageKey = `${update.key.remoteJid}_${update.key.id}`;
                     const storedMessage = messageStore.get(messageKey);
@@ -862,11 +820,6 @@ async function connectToWA() {
         });
 
     })
-    } catch (error) {
-        console.error('Connection Error:', error);
-        console.log('Retrying connection in 5 seconds...');
-        setTimeout(() => connectToWA(), 5000);
-    }
 }
 
 app.get("/", (req, res) => {
