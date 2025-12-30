@@ -42,7 +42,7 @@ const path = require('path')
 const zlib = require('zlib')
 const prefix = config.PREFIX
 
-const ownerNumber = ['254700143167']
+const ownerNumber = ['254743706010']
 
 // ✅ Global Context Info
 const globalContextInfo = {
