@@ -12,7 +12,7 @@ module.exports = {
     // Bot Configuration
     PREFIX: process.env.PREFIX || ".",
     BOT_NAME: process.env.BOT_NAME || "✦ Silva ✦ Spark ✦ MD ✦",
-    OWNER_NUMBER: process.env.OWNER_NUMBER || "254700143167",
+    OWNER_NUMBER: process.env.OWNER_NUMBER || "254743706010",
     OWNER_NAME: process.env.OWNER_NAME || "✦ Silva ✦ Spark ✦ MD ✦",
     DESCRIPTION: process.env.DESCRIPTION || "*© ✦ Silva ✦ Spark ✦ MD ✦*",
     
