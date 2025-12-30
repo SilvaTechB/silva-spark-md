@@ -5,7 +5,7 @@
 <img src="https://i.ibb.co/BVt9McxS/photo-2025-06-15-12-14-29-7516148628621099032.jpg" alt="Silva Spark MD" width="100%" style="border-radius: 20px; box-shadow: 0 8px 16px rgba(157,0,255,0.3);">
 
 <p align="center">
-  <img src="http://readme-typing-svg.herokuapp.com?font=Fira+Code&size=32&duration=2800&pause=1000&color=9D00FF&center=true&vCenter=true&multiline=true&repeat=true&width=800&height=100&lines=✦+The+Most+Advanced+WhatsApp+Bot+✦;⚡+Lightning+Fast+%7C+🛡️+Secure+%7C+🎨+Feature+Rich;💜+Free+Forever+%7C+⭐+Open+Source" alt="Typing SVG" />
+  <img src="http://readme-typing-svg.herokuapp.com?font=Fira+Code&size=32&duration=2800&pause=1000&color=9D00FF&center=true&vCenter=true&multiline=true&repeat=true&width=850&height=200&lines=✦+The+Most+Advanced+WhatsApp+Bot+✦;⚡+Lightning+Fast+%7C+🛡️+Secure+%7C+🎨+Feature+Rich;💜+Free+Forever+%7C+⭐+Open+Source" alt="Typing SVG" />
 </p>
 
 [![Version](https://img.shields.io/badge/Version-2.0.1-9D00FF?style=for-the-badge&logo=semver&logoColor=white&labelColor=000000)](https://github.com/SilvaTechB/silva-spark-md)
