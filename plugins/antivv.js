@@ -1,64 +1,90 @@
-const { cmd } = require("../command");
+const config = require('../config');
+const { cmd } = require('../command');
+const { downloadMediaMessage } = require('@whiskeysockets/baileys');
 
 cmd({
-  pattern: "vv",
-  alias: ["viewonce", 'retrive'],
-  react: '🐳',
-  desc: "Owner Only - retrieve quoted message back to user",
-  category: "owner",
-  filename: __filename
-}, async (client, message, match, { from, isCreator }) => {
-  try {
-    if (!isCreator) {
-      return await client.sendMessage(from, {
-        text: "*📛 This is an owner command.*"
-      }, { quoted: message });
-    }
+    pattern: "vv",
+    alias: ["viewonce"],
+    desc: "Unlock view-once image or video",
+    category: "extra",
+    react: "👁️",
+    filename: __filename
+},
+async (conn, mek, m, { from, quoted, reply }) => {
+    try {
+        const pushname = m.pushName || "there";
+        const sender = m.sender;
 
-    if (!match.quoted) {
-      return await client.sendMessage(from, {
-        text: "*🍁 Please reply to a view once message!*"
-      }, { quoted: message });
-    }
+        if (!quoted) {
+            return reply("❌ Reply to a *view-once image or video*.");
+        }
 
-    const buffer = await match.quoted.download();
-    const mtype = match.quoted.mtype;
-    const options = { quoted: message };
+        let qMsg = quoted.message;
 
-    let messageContent = {};
-    switch (mtype) {
-      case "imageMessage":
-        messageContent = {
-          image: buffer,
-          caption: match.quoted.text || '',
-          mimetype: match.quoted.mimetype || "image/jpeg"
+        // 🔥 Properly unwrap view-once containers
+        if (qMsg?.viewOnceMessage) {
+            qMsg = qMsg.viewOnceMessage.message;
+        } else if (qMsg?.viewOnceMessageV2) {
+            qMsg = qMsg.viewOnceMessageV2.message;
+        } else if (qMsg?.viewOnceMessageV2Extension) {
+            qMsg = qMsg.viewOnceMessageV2Extension.message;
+        }
+
+        const isImage = qMsg?.imageMessage;
+        const isVideo = qMsg?.videoMessage;
+
+        if (!isImage && !isVideo) {
+            return reply("❌ That message is not a view-once image or video.");
+        }
+
+        const mediaType = isImage ? "image" : "video";
+
+        // 🧠 Build quoted key correctly
+        const quotedKey = {
+            remoteJid: from,
+            id: quoted.key.id,
+            participant: quoted.key.participant || sender
         };
-        break;
-      case "videoMessage":
-        messageContent = {
-          video: buffer,
-          caption: match.quoted.text || '',
-          mimetype: match.quoted.mimetype || "video/mp4"
-        };
-        break;
-      case "audioMessage":
-        messageContent = {
-          audio: buffer,
-          mimetype: "audio/mp4",
-          ptt: match.quoted.ptt || false
-        };
-        break;
-      default:
-        return await client.sendMessage(from, {
-          text: "❌ Only image, video, and audio messages are supported"
-        }, { quoted: message });
-    }
 
-    await client.sendMessage(from, messageContent, options);
-  } catch (error) {
-    console.error("vv Error:", error);
-    await client.sendMessage(from, {
-      text: "❌ Error fetching vv message:\n" + error.message
-    }, { quoted: message });
-  }
+        const buffer = await downloadMediaMessage(
+            {
+                key: quotedKey,
+                message: qMsg
+            },
+            "buffer",
+            {},
+            { logger: console }
+        );
+
+        const caption = `✨ *VIEW-ONCE UNLOCKED*
+👤 Requested by: ${pushname}
+⚡ SILVA SPARK MD`;
+
+        const mediaMsg =
+            mediaType === "image"
+                ? { image: buffer, caption }
+                : { video: buffer, caption };
+
+        await conn.sendMessage(
+            from,
+            {
+                ...mediaMsg,
+                contextInfo: {
+                    mentionedJid: [sender],
+                    forwardingScore: 888,
+                    isForwarded: true,
+                    forwardedNewsletterMessageInfo: {
+                        newsletterJid: '120363200367779016@newsletter',
+                        newsletterName: "SILVA • VIEWONCE",
+                        serverMessageId: Math.floor(Math.random() * 1000)
+                    }
+                }
+            },
+            { quoted: mek }
+        );
+
+    } catch (error) {
+        console.error(error);
+        reply(`❌ View-once error:\n${error.message}`);
+    }
 });
