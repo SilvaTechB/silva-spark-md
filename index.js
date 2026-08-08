@@ -99,6 +99,14 @@ let reconnectAttempts = 0
 const MAX_BACKOFF_MS = 60_000
 const MAX_CONSECUTIVE_405 = 4
 let consecutive405 = 0
+let totalWipes = 0
+
+// When true, loadSession() is skipped for one connection attempt so we
+// actually fall through to a fresh QR pairing instead of immediately
+// re-decoding config.SESSION_ID back into creds.json (which is what was
+// silently undoing the wipe before: "Session wiped" was always followed
+// by "Session loaded successfully" from the SAME fixed SESSION_ID env var).
+let skipSessionIdInjectionOnce = false
 
 function wipeSession(reason) {
     try {
@@ -107,7 +115,17 @@ function wipeSession(reason) {
             fs.rmSync(sessionDir, { recursive: true, force: true })
             fs.mkdirSync(sessionDir, { recursive: true })
         }
+        skipSessionIdInjectionOnce = true
+        totalWipes++
         botLogger.log('WARNING', `♻️ Session wiped (${reason}). A fresh QR code will be generated.`)
+        if (totalWipes >= 2) {
+            botLogger.log('ERROR',
+                'Session has been wiped multiple times and WhatsApp is STILL returning 405 on every ' +
+                'handshake, even with a clean session. This is not a session problem — it means the ' +
+                'installed @whiskeysockets/baileys version is outdated/incompatible with WhatsApp\'s ' +
+                'current protocol. Run: npm install @whiskeysockets/baileys@latest and redeploy.'
+            )
+        }
     } catch (e) {
         botLogger.log('ERROR', 'Failed to wipe session: ' + e.message)
     }
@@ -119,6 +137,16 @@ async function loadSession() {
 
         if (!fs.existsSync('./sessions')) {
             fs.mkdirSync('./sessions', { recursive: true });
+        }
+
+        // If we just wiped the session because WhatsApp kept rejecting it,
+        // deliberately skip re-injecting config.SESSION_ID this one time —
+        // otherwise we immediately rewrite the exact same (bad) creds.json
+        // and the wipe accomplishes nothing, which is what was happening.
+        if (skipSessionIdInjectionOnce) {
+            skipSessionIdInjectionOnce = false
+            botLogger.log('INFO', 'Skipping SESSION_ID injection this cycle — waiting for QR pairing.')
+            return false;
         }
 
         // Clean old sessions if needed
@@ -242,7 +270,13 @@ async function connectToWA() {
             }
 
             reconnectAttempts++
-            const delay = Math.min(1000 * 2 ** reconnectAttempts, MAX_BACKOFF_MS)
+            // Once we've already wiped the session twice and are STILL getting
+            // 405s, retrying quickly is pointless (it's a package/version
+            // issue, not a transient network blip) — back off to a slow,
+            // low-noise poll so the app doesn't spam logs/CPU while you
+            // update the dependency and redeploy.
+            const backoffCeiling = totalWipes >= 2 ? 5 * 60_000 : MAX_BACKOFF_MS
+            const delay = Math.min(1000 * 2 ** reconnectAttempts, backoffCeiling)
             botLogger.log('INFO', `Reconnecting in ${Math.round(delay / 1000)}s...`)
             setTimeout(connectToWA, delay)
         } else if (connection === 'open') {
