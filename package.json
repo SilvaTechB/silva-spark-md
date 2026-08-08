@@ -9,7 +9,7 @@
     "restart": "pm2 restart silva-spark-md"
   },
   "dependencies": {
-    "@whiskeysockets/baileys": "^6.7.9",
+    "@whiskeysockets/baileys": "npm:gifted-baileys@^2.5.8",
     "@adiwajshing/keyed-db": "^0.2.4",
     "@dark-yasiya/yt-dl.js": "^1.0.5",
     "@ffmpeg-installer/ffmpeg": "^1.1.0",
@@ -22,7 +22,6 @@
     "crypto-js": "latest",
     "file_size_url": "^1.0.4",
     "fs-extra": "^11.1.0",
-    "fs": "^0.0.1-security",
     "ffmpeg": "^0.0.4",
     "file-type": "^16.5.3",
     "fluent-ffmpeg": "^2.1.2",
