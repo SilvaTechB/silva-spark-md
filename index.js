@@ -268,7 +268,10 @@ async function connectToWA() {
                 }
                 return message;
             },
-            markOnlineOnConnect: true
+            markOnlineOnConnect: true,
+            // Fix for Bad MAC error - retry decryption
+            retryRequestDelayMs: 1000,
+            maxRetries: 3
         })
 
         conn.ev.on('connection.update', async (update) => {
@@ -944,6 +947,12 @@ async function connectToWA() {
             });
 
         })
+
+        // Handle decryption errors gracefully
+        conn.ev.on('decryption.error', (error) => {
+            console.log('Decryption error encountered, retrying...');
+            // The socket will automatically retry
+        });
 
         // Return the connection for further use
         return conn;
