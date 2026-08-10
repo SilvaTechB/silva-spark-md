@@ -1,0 +1,200 @@
+2026-08-08T09:53:32.265107+00:00 app[web.1]: 0|silva-spark-md  | Connecting silva spark to WhatsApp ⏳️...
+2026-08-08T09:53:32.265405+00:00 app[web.1]: 0|silva-spark-md  | [8/8/2026, 9:53:32 AM] [SUCCESS] ✅ Session loaded successfully
+2026-08-08T09:53:32.275698+00:00 app[web.1]: 0|silva-spark-md  | [8/8/2026, 9:53:32 AM] [INFO] Using WA v2.3000.1043857760, isLatest: true
+2026-08-08T09:53:32.276294+00:00 app[web.1]: 0|silva-spark-md  | [8/8/2026, 9:53:32 AM] [ERROR] Connection error: The value of "size" is out of range. It must be >= 0 && <= 9007199254740991. Received NaN
+2026-08-08T09:53:37.277723+00:00 app[web.1]: 0|silva-spark-md  | Connecting silva spark to WhatsApp ⏳️...
+2026-08-08T09:53:37.278142+00:00 app[web.1]: 0|silva-spark-md  | [8/8/2026, 9:53:37 AM] [SUCCESS] ✅ Session loaded successfully
+2026-08-08T09:53:37.288895+00:00 app[web.1]: 0|silva-spark-md  | [8/8/2026, 9:53:37 AM] [INFO] Using WA v2.3000.1043857760, isLatest: true
+2026-08-08T09:53:37.289450+00:00 app[web.1]: 0|silva-spark-md  | [8/8/2026, 9:53:37 AM] [ERROR] Connection error: The value of "size" is out of range. It must be >= 0 && <= 9007199254740991. Received NaN
+2026-08-08T09:53:42.289666+00:00 app[web.1]: 0|silva-spark-md  | Connecting silva spark to WhatsApp ⏳️...
+2026-08-08T09:53:42.289920+00:00 app[web.1]: 0|silva-spark-md  | [8/8/2026, 9:53:42 AM] [SUCCESS] ✅ Session loaded successfully
+2026-08-08T09:53:42.298909+00:00 app[web.1]: 0|silva-spark-md  | [8/8/2026, 9:53:42 AM] [INFO] Using WA v2.3000.1043857760, isLatest: true
+2026-08-08T09:53:42.299441+00:00 app[web.1]: 0|silva-spark-md  | [8/8/2026, 9:53:42 AM] [ERROR] Connection error: The value of "size" is out of range. It must be >= 0 && <= 9007199254740991. Received NaN
+2026-08-08T09:53:47.300015+00:00 app[web.1]: 0|silva-spark-md  | Connecting silva spark to WhatsApp ⏳️...
+2026-08-08T09:53:47.300201+00:00 app[web.1]: 0|silva-spark-md  | [8/8/2026, 9:53:47 AM] [SUCCESS] ✅ Session loaded successfully
+2026-08-08T09:53:47.310206+00:00 app[web.1]: 0|silva-spark-md  | [8/8/2026, 9:53:47 AM] [INFO] Using WA v2.3000.1043857760, isLatest: true
+2026-08-08T09:53:47.310725+00:00 app[web.1]: 0|silva-spark-md  | [8/8/2026, 9:53:47 AM] [ERROR] Connection error: The value of "size" is out of range. It must be >= 0 && <= 9007199254740991. Received NaN
+2026-08-08T09:53:52.310637+00:00 app[web.1]: 0|silva-spark-md  | Connecting silva spark to WhatsApp ⏳️...
+2026-08-08T09:53:52.311091+00:00 app[web.1]: 0|silva-spark-md  | [8/8/2026, 9:53:52 AM] [SUCCESS] ✅ Session loaded successfully
+2026-08-08T09:53:52.321304+00:00 app[web.1]: 0|silva-spark-md  | [8/8/2026, 9:53:52 AM] [INFO] Using WA v2.3000.1043857760, isLatest: true
+2026-08-08T09:53:52.322017+00:00 app[web.1]: 0|silva-spark-md  | [8/8/2026, 9:53:52 AM] [ERROR] Connection error: The value of "size" is out of range. It must be >= 0 && <= 9007199254740991. Received NaN
+2026-08-08T09:53:57.321862+00:00 app[web.1]: 0|silva-spark-md  | Connecting silva spark to WhatsApp ⏳️...
+2026-08-08T09:53:57.322203+00:00 app[web.1]: 0|silva-spark-md  | [8/8/2026, 9:53:57 AM] [SUCCESS] ✅ Session loaded successfully
+2026-08-08T09:53:57.330885+00:00 app[web.1]: 0|silva-spark-md  | [8/8/2026, 9:53:57 AM] [INFO] Using WA v2.3000.1043857760, isLatest: true
+2026-08-08T09:53:57.331607+00:00 app[web.1]: 0|silva-spark-md  | [8/8/2026, 9:53:57 AM] [ERROR] Connection error: The value of "size" is out of range. It must be >= 0 && <= 9007199254740991. Received NaN
+2026-08-08T09:54:02.332532+00:00 app[web.1]: 0|silva-spark-md  | Connecting silva spark to WhatsApp ⏳️...
+2026-08-08T09:54:02.332822+00:00 app[web.1]: 0|silva-spark-md  | [8/8/2026, 9:54:02 AM] [SUCCESS] ✅ Session loaded successfully
+2026-08-08T09:54:02.342383+00:00 app[web.1]: 0|silva-spark-md  | [8/8/2026, 9:54:02 AM] [INFO] Using WA v2.3000.1043857760, isLatest: true
+2026-08-08T09:54:02.342847+00:00 app[web.1]: 0|silva-spark-md  | [8/8/2026, 9:54:02 AM] [ERROR] Connection error: The value of "size" is out of range. It must be >= 0 && <= 9007199254740991. Received NaN
+2026-08-08T09:54:05.989106+00:00 app[api]: Log session created by user ceo@emails.silvatech.co.ke
+2026-08-08T09:54:07.342613+00:00 app[web.1]: 0|silva-spark-md  | Connecting silva spark to WhatsApp ⏳️...
+2026-08-08T09:54:07.342866+00:00 app[web.1]: 0|silva-spark-md  | [8/8/2026, 9:54:07 AM] [SUCCESS] ✅ Session loaded successfully
+2026-08-08T09:54:07.352082+00:00 app[web.1]: 0|silva-spark-md  | [8/8/2026, 9:54:07 AM] [INFO] Using WA v2.3000.1043857760, isLatest: true
+2026-08-08T09:54:07.352728+00:00 app[web.1]: 0|silva-spark-md  | [8/8/2026, 9:54:07 AM] [ERROR] Connection error: The value of "size" is out of range. It must be >= 0 && <= 9007199254740991. Received NaN
+2026-08-08T09:54:12.354215+00:00 app[web.1]: 0|silva-spark-md  | Connecting silva spark to WhatsApp ⏳️...
+2026-08-08T09:54:12.354598+00:00 app[web.1]: 0|silva-spark-md  | [8/8/2026, 9:54:12 AM] [SUCCESS] ✅ Session loaded successfully
+2026-08-08T09:54:12.364229+00:00 app[web.1]: 0|silva-spark-md  | [8/8/2026, 9:54:12 AM] [INFO] Using WA v2.3000.1043857760, isLatest: true
+2026-08-08T09:54:12.364882+00:00 app[web.1]: 0|silva-spark-md  | [8/8/2026, 9:54:12 AM] [ERROR] Connection error: The value of "size" is out of range. It must be >= 0 && <= 9007199254740991. Received NaN
+2026-08-08T09:54:17.365355+00:00 app[web.1]: 0|silva-spark-md  | Connecting silva spark to WhatsApp ⏳️...
+2026-08-08T09:54:17.365747+00:00 app[web.1]: 0|silva-spark-md  | [8/8/2026, 9:54:17 AM] [SUCCESS] ✅ Session loaded successfully
+2026-08-08T09:54:17.378796+00:00 app[web.1]: 0|silva-spark-md  | [8/8/2026, 9:54:17 AM] [INFO] Using WA v2.3000.1043857760, isLatest: true
+2026-08-08T09:54:17.379433+00:00 app[web.1]: 0|silva-spark-md  | [8/8/2026, 9:54:17 AM] [ERROR] Connection error: The value of "size" is out of range. It must be >= 0 && <= 9007199254740991. Received NaN
+2026-08-08T09:54:22.380419+00:00 app[web.1]: 0|silva-spark-md  | Connecting silva spark to WhatsApp ⏳️...
+2026-08-08T09:54:22.380744+00:00 app[web.1]: 0|silva-spark-md  | [8/8/2026, 9:54:22 AM] [SUCCESS] ✅ Session loaded successfully
+2026-08-08T09:54:22.390617+00:00 app[web.1]: 0|silva-spark-md  | [8/8/2026, 9:54:22 AM] [INFO] Using WA v2.3000.1043857760, isLatest: true
+2026-08-08T09:54:22.391059+00:00 app[web.1]: 0|silva-spark-md  | [8/8/2026, 9:54:22 AM] [ERROR] Connection error: The value of "size" is out of range. It must be >= 0 && <= 9007199254740991. Received NaN
+2026-08-08T09:54:27.390818+00:00 app[web.1]: 0|silva-spark-md  | Connecting silva spark to WhatsApp ⏳️...
+2026-08-08T09:54:27.391209+00:00 app[web.1]: 0|silva-spark-md  | [8/8/2026, 9:54:27 AM] [SUCCESS] ✅ Session loaded successfully
+2026-08-08T09:54:27.401059+00:00 app[web.1]: 0|silva-spark-md  | [8/8/2026, 9:54:27 AM] [INFO] Using WA v2.3000.1043857760, isLatest: true
+2026-08-08T09:54:27.401587+00:00 app[web.1]: 0|silva-spark-md  | [8/8/2026, 9:54:27 AM] [ERROR] Connection error: The value of "size" is out of range. It must be >= 0 && <= 9007199254740991. Received NaN
+2026-08-08T09:54:32.402187+00:00 app[web.1]: 0|silva-spark-md  | Connecting silva spark to WhatsApp ⏳️...
+2026-08-08T09:54:32.402422+00:00 app[web.1]: 0|silva-spark-md  | [8/8/2026, 9:54:32 AM] [SUCCESS] ✅ Session loaded successfully
+2026-08-08T09:54:32.411171+00:00 app[web.1]: 0|silva-spark-md  | [8/8/2026, 9:54:32 AM] [INFO] Using WA v2.3000.1043857760, isLatest: true
+2026-08-08T09:54:32.411747+00:00 app[web.1]: 0|silva-spark-md  | [8/8/2026, 9:54:32 AM] [ERROR] Connection error: The value of "size" is out of range. It must be >= 0 && <= 9007199254740991. Received NaN
+2026-08-08T09:54:37.412299+00:00 app[web.1]: 0|silva-spark-md  | Connecting silva spark to WhatsApp ⏳️...
+2026-08-08T09:54:37.412545+00:00 app[web.1]: 0|silva-spark-md  | [8/8/2026, 9:54:37 AM] [SUCCESS] ✅ Session loaded successfully
+2026-08-08T09:54:37.421767+00:00 app[web.1]: 0|silva-spark-md  | [8/8/2026, 9:54:37 AM] [INFO] Using WA v2.3000.1043857760, isLatest: true
+2026-08-08T09:54:37.422356+00:00 app[web.1]: 0|silva-spark-md  | [8/8/2026, 9:54:37 AM] [ERROR] Connection error: The value of "size" is out of range. It must be >= 0 && <= 9007199254740991. Received NaN
+2026-08-08T09:54:42.422860+00:00 app[web.1]: 0|silva-spark-md  | Connecting silva spark to WhatsApp ⏳️...
+2026-08-08T09:54:42.423167+00:00 app[web.1]: 0|silva-spark-md  | [8/8/2026, 9:54:42 AM] [SUCCESS] ✅ Session loaded successfully
+2026-08-08T09:54:42.433592+00:00 app[web.1]: 0|silva-spark-md  | [8/8/2026, 9:54:42 AM] [INFO] Using WA v2.3000.1043857760, isLatest: true
+2026-08-08T09:54:42.434189+00:00 app[web.1]: 0|silva-spark-md  | [8/8/2026, 9:54:42 AM] [ERROR] Connection error: The value of "size" is out of range. It must be >= 0 && <= 9007199254740991. Received NaN
+2026-08-08T09:54:47.435603+00:00 app[web.1]: 0|silva-spark-md  | Connecting silva spark to WhatsApp ⏳️...
+2026-08-08T09:54:47.435798+00:00 app[web.1]: 0|silva-spark-md  | [8/8/2026, 9:54:47 AM] [SUCCESS] ✅ Session loaded successfully
+2026-08-08T09:54:47.446628+00:00 app[web.1]: 0|silva-spark-md  | [8/8/2026, 9:54:47 AM] [INFO] Using WA v2.3000.1043857760, isLatest: true
+2026-08-08T09:54:47.447134+00:00 app[web.1]: 0|silva-spark-md  | [8/8/2026, 9:54:47 AM] [ERROR] Connection error: The value of "size" is out of range. It must be >= 0 && <= 9007199254740991. Received NaN
+2026-08-08T09:54:52.447616+00:00 app[web.1]: 0|silva-spark-md  | Connecting silva spark to WhatsApp ⏳️...
+2026-08-08T09:54:52.447921+00:00 app[web.1]: 0|silva-spark-md  | [8/8/2026, 9:54:52 AM] [SUCCESS] ✅ Session loaded successfully
+2026-08-08T09:54:52.458540+00:00 app[web.1]: 0|silva-spark-md  | [8/8/2026, 9:54:52 AM] [INFO] Using WA v2.3000.1043857760, isLatest: true
+2026-08-08T09:54:52.459250+00:00 app[web.1]: 0|silva-spark-md  | [8/8/2026, 9:54:52 AM] [ERROR] Connection error: The value of "size" is out of range. It must be >= 0 && <= 9007199254740991. Received NaN
+2026-08-08T09:54:57.460442+00:00 app[web.1]: 0|silva-spark-md  | Connecting silva spark to WhatsApp ⏳️...
+2026-08-08T09:54:57.460776+00:00 app[web.1]: 0|silva-spark-md  | [8/8/2026, 9:54:57 AM] [SUCCESS] ✅ Session loaded successfully
+2026-08-08T09:54:57.470115+00:00 app[web.1]: 0|silva-spark-md  | [8/8/2026, 9:54:57 AM] [INFO] Using WA v2.3000.1043857760, isLatest: true
+2026-08-08T09:54:57.470635+00:00 app[web.1]: 0|silva-spark-md  | [8/8/2026, 9:54:57 AM] [ERROR] Connection error: The value of "size" is out of range. It must be >= 0 && <= 9007199254740991. Received NaN
+2026-08-08T09:55:02.470896+00:00 app[web.1]: 0|silva-spark-md  | Connecting silva spark to WhatsApp ⏳️...
+2026-08-08T09:55:02.471146+00:00 app[web.1]: 0|silva-spark-md  | [8/8/2026, 9:55:02 AM] [SUCCESS] ✅ Session loaded successfully
+2026-08-08T09:55:02.480621+00:00 app[web.1]: 0|silva-spark-md  | [8/8/2026, 9:55:02 AM] [INFO] Using WA v2.3000.1043857760, isLatest: true
+2026-08-08T09:55:02.481192+00:00 app[web.1]: 0|silva-spark-md  | [8/8/2026, 9:55:02 AM] [ERROR] Connection error: The value of "size" is out of range. It must be >= 0 && <= 9007199254740991. Received NaN
+2026-08-08T09:55:06.141271+00:00 app[api]: Log session created by user ceo@emails.silvatech.co.ke
+2026-08-08T09:55:07.481913+00:00 app[web.1]: 0|silva-spark-md  | Connecting silva spark to WhatsApp ⏳️...
+2026-08-08T09:55:07.482110+00:00 app[web.1]: 0|silva-spark-md  | [8/8/2026, 9:55:07 AM] [SUCCESS] ✅ Session loaded successfully
+2026-08-08T09:55:07.491094+00:00 app[web.1]: 0|silva-spark-md  | [8/8/2026, 9:55:07 AM] [INFO] Using WA v2.3000.1043857760, isLatest: true
+2026-08-08T09:55:07.491718+00:00 app[web.1]: 0|silva-spark-md  | [8/8/2026, 9:55:07 AM] [ERROR] Connection error: The value of "size" is out of range. It must be >= 0 && <= 9007199254740991. Received NaN
+2026-08-08T09:55:12.492441+00:00 app[web.1]: 0|silva-spark-md  | Connecting silva spark to WhatsApp ⏳️...
+2026-08-08T09:55:12.492741+00:00 app[web.1]: 0|silva-spark-md  | [8/8/2026, 9:55:12 AM] [SUCCESS] ✅ Session loaded successfully
+2026-08-08T09:55:12.503427+00:00 app[web.1]: 0|silva-spark-md  | [8/8/2026, 9:55:12 AM] [INFO] Using WA v2.3000.1043857760, isLatest: true
+2026-08-08T09:55:12.504109+00:00 app[web.1]: 0|silva-spark-md  | [8/8/2026, 9:55:12 AM] [ERROR] Connection error: The value of "size" is out of range. It must be >= 0 && <= 9007199254740991. Received NaN
+2026-08-08T09:55:17.504523+00:00 app[web.1]: 0|silva-spark-md  | Connecting silva spark to WhatsApp ⏳️...
+2026-08-08T09:55:17.504764+00:00 app[web.1]: 0|silva-spark-md  | [8/8/2026, 9:55:17 AM] [SUCCESS] ✅ Session loaded successfully
+2026-08-08T09:55:17.515506+00:00 app[web.1]: 0|silva-spark-md  | [8/8/2026, 9:55:17 AM] [INFO] Using WA v2.3000.1043857760, isLatest: true
+2026-08-08T09:55:17.516018+00:00 app[web.1]: 0|silva-spark-md  | [8/8/2026, 9:55:17 AM] [ERROR] Connection error: The value of "size" is out of range. It must be >= 0 && <= 9007199254740991. Received NaN
+2026-08-08T09:55:22.516601+00:00 app[web.1]: 0|silva-spark-md  | Connecting silva spark to WhatsApp ⏳️...
+2026-08-08T09:55:22.516839+00:00 app[web.1]: 0|silva-spark-md  | [8/8/2026, 9:55:22 AM] [SUCCESS] ✅ Session loaded successfully
+2026-08-08T09:55:22.527340+00:00 app[web.1]: 0|silva-spark-md  | [8/8/2026, 9:55:22 AM] [INFO] Using WA v2.3000.1043857760, isLatest: true
+2026-08-08T09:55:22.527856+00:00 app[web.1]: 0|silva-spark-md  | [8/8/2026, 9:55:22 AM] [ERROR] Connection error: The value of "size" is out of range. It must be >= 0 && <= 9007199254740991. Received NaN
+2026-08-08T09:55:27.528452+00:00 app[web.1]: 0|silva-spark-md  | Connecting silva spark to WhatsApp ⏳️...
+2026-08-08T09:55:27.528833+00:00 app[web.1]: 0|silva-spark-md  | [8/8/2026, 9:55:27 AM] [SUCCESS] ✅ Session loaded successfully
+2026-08-08T09:55:27.539529+00:00 app[web.1]: 0|silva-spark-md  | [8/8/2026, 9:55:27 AM] [INFO] Using WA v2.3000.1043857760, isLatest: true
+2026-08-08T09:55:27.540316+00:00 app[web.1]: 0|silva-spark-md  | [8/8/2026, 9:55:27 AM] [ERROR] Connection error: The value of "size" is out of range. It must be >= 0 && <= 9007199254740991. Received NaN
+2026-08-08T09:55:32.540974+00:00 app[web.1]: 0|silva-spark-md  | Connecting silva spark to WhatsApp ⏳️...
+2026-08-08T09:55:32.541000+00:00 app[web.1]: 0|silva-spark-md  | [8/8/2026, 9:55:32 AM] [SUCCESS] ✅ Session loaded successfully
+2026-08-08T09:55:32.550487+00:00 app[web.1]: 0|silva-spark-md  | [8/8/2026, 9:55:32 AM] [INFO] Using WA v2.3000.1043857760, isLatest: true
+2026-08-08T09:55:32.551194+00:00 app[web.1]: 0|silva-spark-md  | [8/8/2026, 9:55:32 AM] [ERROR] Connection error: The value of "size" is out of range. It must be >= 0 && <= 9007199254740991. Received NaN
+2026-08-08T09:55:37.551920+00:00 app[web.1]: 0|silva-spark-md  | Connecting silva spark to WhatsApp ⏳️...
+2026-08-08T09:55:37.552302+00:00 app[web.1]: 0|silva-spark-md  | [8/8/2026, 9:55:37 AM] [SUCCESS] ✅ Session loaded successfully
+2026-08-08T09:55:37.561743+00:00 app[web.1]: 0|silva-spark-md  | [8/8/2026, 9:55:37 AM] [INFO] Using WA v2.3000.1043857760, isLatest: true
+2026-08-08T09:55:37.562412+00:00 app[web.1]: 0|silva-spark-md  | [8/8/2026, 9:55:37 AM] [ERROR] Connection error: The value of "size" is out of range. It must be >= 0 && <= 9007199254740991. Received NaN
+2026-08-08T09:55:42.563389+00:00 app[web.1]: 0|silva-spark-md  | Connecting silva spark to WhatsApp ⏳️...
+2026-08-08T09:55:42.563707+00:00 app[web.1]: 0|silva-spark-md  | [8/8/2026, 9:55:42 AM] [SUCCESS] ✅ Session loaded successfully
+2026-08-08T09:55:42.574015+00:00 app[web.1]: 0|silva-spark-md  | [8/8/2026, 9:55:42 AM] [INFO] Using WA v2.3000.1043857760, isLatest: true
+2026-08-08T09:55:42.574592+00:00 app[web.1]: 0|silva-spark-md  | [8/8/2026, 9:55:42 AM] [ERROR] Connection error: The value of "size" is out of range. It must be >= 0 && <= 9007199254740991. Received NaN
+2026-08-08T09:55:47.575502+00:00 app[web.1]: 0|silva-spark-md  | Connecting silva spark to WhatsApp ⏳️...
+2026-08-08T09:55:47.575813+00:00 app[web.1]: 0|silva-spark-md  | [8/8/2026, 9:55:47 AM] [SUCCESS] ✅ Session loaded successfully
+2026-08-08T09:55:47.584417+00:00 app[web.1]: 0|silva-spark-md  | [8/8/2026, 9:55:47 AM] [INFO] Using WA v2.3000.1043857760, isLatest: true
+2026-08-08T09:55:47.584985+00:00 app[web.1]: 0|silva-spark-md  | [8/8/2026, 9:55:47 AM] [ERROR] Connection error: The value of "size" is out of range. It must be >= 0 && <= 9007199254740991. Received NaN
+2026-08-08T09:55:52.585037+00:00 app[web.1]: 0|silva-spark-md  | Connecting silva spark to WhatsApp ⏳️...
+2026-08-08T09:55:52.585217+00:00 app[web.1]: 0|silva-spark-md  | [8/8/2026, 9:55:52 AM] [SUCCESS] ✅ Session loaded successfully
+2026-08-08T09:55:52.593925+00:00 app[web.1]: 0|silva-spark-md  | [8/8/2026, 9:55:52 AM] [INFO] Using WA v2.3000.1043857760, isLatest: true
+2026-08-08T09:55:52.594453+00:00 app[web.1]: 0|silva-spark-md  | [8/8/2026, 9:55:52 AM] [ERROR] Connection error: The value of "size" is out of range. It must be >= 0 && <= 9007199254740991. Received NaN
+2026-08-08T09:55:57.595232+00:00 app[web.1]: 0|silva-spark-md  | Connecting silva spark to WhatsApp ⏳️...
+2026-08-08T09:55:57.595447+00:00 app[web.1]: 0|silva-spark-md  | [8/8/2026, 9:55:57 AM] [SUCCESS] ✅ Session loaded successfully
+2026-08-08T09:55:57.605967+00:00 app[web.1]: 0|silva-spark-md  | [8/8/2026, 9:55:57 AM] [INFO] Using WA v2.3000.1043857760, isLatest: true
+2026-08-08T09:55:57.606423+00:00 app[web.1]: 0|silva-spark-md  | [8/8/2026, 9:55:57 AM] [ERROR] Connection error: The value of "size" is out of range. It must be >= 0 && <= 9007199254740991. Received NaN
+2026-08-08T09:56:02.606980+00:00 app[web.1]: 0|silva-spark-md  | Connecting silva spark to WhatsApp ⏳️...
+2026-08-08T09:56:02.607361+00:00 app[web.1]: 0|silva-spark-md  | [8/8/2026, 9:56:02 AM] [SUCCESS] ✅ Session loaded successfully
+2026-08-08T09:56:02.618214+00:00 app[web.1]: 0|silva-spark-md  | [8/8/2026, 9:56:02 AM] [INFO] Using WA v2.3000.1043857760, isLatest: true
+2026-08-08T09:56:02.618783+00:00 app[web.1]: 0|silva-spark-md  | [8/8/2026, 9:56:02 AM] [ERROR] Connection error: The value of "size" is out of range. It must be >= 0 && <= 9007199254740991. Received NaN
+2026-08-08T09:56:05.965491+00:00 app[api]: Log session created by user ceo@emails.silvatech.co.ke
+2026-08-08T09:56:07.618911+00:00 app[web.1]: 0|silva-spark-md  | Connecting silva spark to WhatsApp ⏳️...
+2026-08-08T09:56:07.619215+00:00 app[web.1]: 0|silva-spark-md  | [8/8/2026, 9:56:07 AM] [SUCCESS] ✅ Session loaded successfully
+2026-08-08T09:56:07.629271+00:00 app[web.1]: 0|silva-spark-md  | [8/8/2026, 9:56:07 AM] [INFO] Using WA v2.3000.1043857760, isLatest: true
+2026-08-08T09:56:07.629967+00:00 app[web.1]: 0|silva-spark-md  | [8/8/2026, 9:56:07 AM] [ERROR] Connection error: The value of "size" is out of range. It must be >= 0 && <= 9007199254740991. Received NaN
+2026-08-08T09:56:12.629793+00:00 app[web.1]: 0|silva-spark-md  | Connecting silva spark to WhatsApp ⏳️...
+2026-08-08T09:56:12.630135+00:00 app[web.1]: 0|silva-spark-md  | [8/8/2026, 9:56:12 AM] [SUCCESS] ✅ Session loaded successfully
+2026-08-08T09:56:12.639746+00:00 app[web.1]: 0|silva-spark-md  | [8/8/2026, 9:56:12 AM] [INFO] Using WA v2.3000.1043857760, isLatest: true
+2026-08-08T09:56:12.640286+00:00 app[web.1]: 0|silva-spark-md  | [8/8/2026, 9:56:12 AM] [ERROR] Connection error: The value of "size" is out of range. It must be >= 0 && <= 9007199254740991. Received NaN
+2026-08-08T09:56:17.641634+00:00 app[web.1]: 0|silva-spark-md  | Connecting silva spark to WhatsApp ⏳️...
+2026-08-08T09:56:17.641989+00:00 app[web.1]: 0|silva-spark-md  | [8/8/2026, 9:56:17 AM] [SUCCESS] ✅ Session loaded successfully
+2026-08-08T09:56:17.651806+00:00 app[web.1]: 0|silva-spark-md  | [8/8/2026, 9:56:17 AM] [INFO] Using WA v2.3000.1043857760, isLatest: true
+2026-08-08T09:56:17.652479+00:00 app[web.1]: 0|silva-spark-md  | [8/8/2026, 9:56:17 AM] [ERROR] Connection error: The value of "size" is out of range. It must be >= 0 && <= 9007199254740991. Received NaN
+2026-08-08T09:56:22.653044+00:00 app[web.1]: 0|silva-spark-md  | Connecting silva spark to WhatsApp ⏳️...
+2026-08-08T09:56:22.653321+00:00 app[web.1]: 0|silva-spark-md  | [8/8/2026, 9:56:22 AM] [SUCCESS] ✅ Session loaded successfully
+2026-08-08T09:56:22.662881+00:00 app[web.1]: 0|silva-spark-md  | [8/8/2026, 9:56:22 AM] [INFO] Using WA v2.3000.1043857760, isLatest: true
+2026-08-08T09:56:22.663484+00:00 app[web.1]: 0|silva-spark-md  | [8/8/2026, 9:56:22 AM] [ERROR] Connection error: The value of "size" is out of range. It must be >= 0 && <= 9007199254740991. Received NaN
+2026-08-08T09:56:27.663618+00:00 app[web.1]: 0|silva-spark-md  | Connecting silva spark to WhatsApp ⏳️...
+2026-08-08T09:56:27.663864+00:00 app[web.1]: 0|silva-spark-md  | [8/8/2026, 9:56:27 AM] [SUCCESS] ✅ Session loaded successfully
+2026-08-08T09:56:27.674783+00:00 app[web.1]: 0|silva-spark-md  | [8/8/2026, 9:56:27 AM] [INFO] Using WA v2.3000.1043857760, isLatest: true
+2026-08-08T09:56:27.675364+00:00 app[web.1]: 0|silva-spark-md  | [8/8/2026, 9:56:27 AM] [ERROR] Connection error: The value of "size" is out of range. It must be >= 0 && <= 9007199254740991. Received NaN
+2026-08-08T09:56:32.675980+00:00 app[web.1]: 0|silva-spark-md  | Connecting silva spark to WhatsApp ⏳️...
+2026-08-08T09:56:32.677986+00:00 app[web.1]: 0|silva-spark-md  | [8/8/2026, 9:56:32 AM] [SUCCESS] ✅ Session loaded successfully
+2026-08-08T09:56:32.687765+00:00 app[web.1]: 0|silva-spark-md  | [8/8/2026, 9:56:32 AM] [INFO] Using WA v2.3000.1043857760, isLatest: true
+2026-08-08T09:56:32.688628+00:00 app[web.1]: 0|silva-spark-md  | [8/8/2026, 9:56:32 AM] [ERROR] Connection error: The value of "size" is out of range. It must be >= 0 && <= 9007199254740991. Received NaN
+2026-08-08T09:56:37.689228+00:00 app[web.1]: 0|silva-spark-md  | Connecting silva spark to WhatsApp ⏳️...
+2026-08-08T09:56:37.692192+00:00 app[web.1]: 0|silva-spark-md  | [8/8/2026, 9:56:37 AM] [SUCCESS] ✅ Session loaded successfully
+2026-08-08T09:56:37.702121+00:00 app[web.1]: 0|silva-spark-md  | [8/8/2026, 9:56:37 AM] [INFO] Using WA v2.3000.1043857760, isLatest: true
+2026-08-08T09:56:37.702698+00:00 app[web.1]: 0|silva-spark-md  | [8/8/2026, 9:56:37 AM] [ERROR] Connection error: The value of "size" is out of range. It must be >= 0 && <= 9007199254740991. Received NaN
+2026-08-08T09:56:42.703702+00:00 app[web.1]: 0|silva-spark-md  | Connecting silva spark to WhatsApp ⏳️...
+2026-08-08T09:56:42.703997+00:00 app[web.1]: 0|silva-spark-md  | [8/8/2026, 9:56:42 AM] [SUCCESS] ✅ Session loaded successfully
+2026-08-08T09:56:42.714875+00:00 app[web.1]: 0|silva-spark-md  | [8/8/2026, 9:56:42 AM] [INFO] Using WA v2.3000.1043857760, isLatest: true
+2026-08-08T09:56:42.715468+00:00 app[web.1]: 0|silva-spark-md  | [8/8/2026, 9:56:42 AM] [ERROR] Connection error: The value of "size" is out of range. It must be >= 0 && <= 9007199254740991. Received NaN
+2026-08-08T09:56:47.716121+00:00 app[web.1]: 0|silva-spark-md  | Connecting silva spark to WhatsApp ⏳️...
+2026-08-08T09:56:47.716462+00:00 app[web.1]: 0|silva-spark-md  | [8/8/2026, 9:56:47 AM] [SUCCESS] ✅ Session loaded successfully
+2026-08-08T09:56:47.725322+00:00 app[web.1]: 0|silva-spark-md  | [8/8/2026, 9:56:47 AM] [INFO] Using WA v2.3000.1043857760, isLatest: true
+2026-08-08T09:56:47.725827+00:00 app[web.1]: 0|silva-spark-md  | [8/8/2026, 9:56:47 AM] [ERROR] Connection error: The value of "size" is out of range. It must be >= 0 && <= 9007199254740991. Received NaN
+2026-08-08T09:56:52.726357+00:00 app[web.1]: 0|silva-spark-md  | Connecting silva spark to WhatsApp ⏳️...
+2026-08-08T09:56:52.726502+00:00 app[web.1]: 0|silva-spark-md  | [8/8/2026, 9:56:52 AM] [SUCCESS] ✅ Session loaded successfully
+2026-08-08T09:56:52.736546+00:00 app[web.1]: 0|silva-spark-md  | [8/8/2026, 9:56:52 AM] [INFO] Using WA v2.3000.1043857760, isLatest: true
+2026-08-08T09:56:52.737154+00:00 app[web.1]: 0|silva-spark-md  | [8/8/2026, 9:56:52 AM] [ERROR] Connection error: The value of "size" is out of range. It must be >= 0 && <= 9007199254740991. Received NaN
+2026-08-08T09:56:57.736923+00:00 app[web.1]: 0|silva-spark-md  | Connecting silva spark to WhatsApp ⏳️...
+2026-08-08T09:56:57.737298+00:00 app[web.1]: 0|silva-spark-md  | [8/8/2026, 9:56:57 AM] [SUCCESS] ✅ Session loaded successfully
+2026-08-08T09:56:57.746354+00:00 app[web.1]: 0|silva-spark-md  | [8/8/2026, 9:56:57 AM] [INFO] Using WA v2.3000.1043857760, isLatest: true
+2026-08-08T09:56:57.747101+00:00 app[web.1]: 0|silva-spark-md  | [8/8/2026, 9:56:57 AM] [ERROR] Connection error: The value of "size" is out of range. It must be >= 0 && <= 9007199254740991. Received NaN
+2026-08-08T09:57:02.746694+00:00 app[web.1]: 0|silva-spark-md  | Connecting silva spark to WhatsApp ⏳️...
+2026-08-08T09:57:02.746880+00:00 app[web.1]: 0|silva-spark-md  | [8/8/2026, 9:57:02 AM] [SUCCESS] ✅ Session loaded successfully
+2026-08-08T09:57:02.757644+00:00 app[web.1]: 0|silva-spark-md  | [8/8/2026, 9:57:02 AM] [INFO] Using WA v2.3000.1043857760, isLatest: true
+2026-08-08T09:57:02.758221+00:00 app[web.1]: 0|silva-spark-md  | [8/8/2026, 9:57:02 AM] [ERROR] Connection error: The value of "size" is out of range. It must be >= 0 && <= 9007199254740991. Received NaN
+2026-08-08T09:57:06.129366+00:00 app[api]: Log session created by user ceo@emails.silvatech.co.ke
+2026-08-08T09:57:07.759264+00:00 app[web.1]: 0|silva-spark-md  | Connecting silva spark to WhatsApp ⏳️...
+2026-08-08T09:57:07.759590+00:00 app[web.1]: 0|silva-spark-md  | [8/8/2026, 9:57:07 AM] [SUCCESS] ✅ Session loaded successfully
+2026-08-08T09:57:07.769349+00:00 app[web.1]: 0|silva-spark-md  | [8/8/2026, 9:57:07 AM] [INFO] Using WA v2.3000.1043857760, isLatest: true
+2026-08-08T09:57:07.769993+00:00 app[web.1]: 0|silva-spark-md  | [8/8/2026, 9:57:07 AM] [ERROR] Connection error: The value of "size" is out of range. It must be >= 0 && <= 9007199254740991. Received NaN
+2026-08-08T09:57:12.770756+00:00 app[web.1]: 0|silva-spark-md  | Connecting silva spark to WhatsApp ⏳️...
+2026-08-08T09:57:12.770992+00:00 app[web.1]: 0|silva-spark-md  | [8/8/2026, 9:57:12 AM] [SUCCESS] ✅ Session loaded successfully
+2026-08-08T09:57:12.780681+00:00 app[web.1]: 0|silva-spark-md  | [8/8/2026, 9:57:12 AM] [INFO] Using WA v2.3000.1043857760, isLatest: true
+2026-08-08T09:57:12.781404+00:00 app[web.1]: 0|silva-spark-md  | [8/8/2026, 9:57:12 AM] [ERROR] Connection error: The value of "size" is out of range. It must be >= 0 && <= 9007199254740991. Received NaN
+2026-08-08T09:57:17.782619+00:00 app[web.1]: 0|silva-spark-md  | Connecting silva spark to WhatsApp ⏳️...
+2026-08-08T09:57:17.783044+00:00 app[web.1]: 0|silva-spark-md  | [8/8/2026, 9:57:17 AM] [SUCCESS] ✅ Session loaded successfully
+2026-08-08T09:57:17.793197+00:00 app[web.1]: 0|silva-spark-md  | [8/8/2026, 9:57:17 AM] [INFO] Using WA v2.3000.1043857760, isLatest: true
+2026-08-08T09:57:17.793997+00:00 app[web.1]: 0|silva-spark-md  | [8/8/2026, 9:57:17 AM] [ERROR] Connection error: The value of "size" is out of range. It must be >= 0 && <= 9007199254740991. Received NaN
+2026-08-08T09:57:22.794184+00:00 app[web.1]: 0|silva-spark-md  | Connecting silva spark to WhatsApp ⏳️...
+2026-08-08T09:57:22.794541+00:00 app[web.1]: 0|silva-spark-md  | [8/8/2026, 9:57:22 AM] [SUCCESS] ✅ Session loaded successfully
+2026-08-08T09:57:22.804909+00:00 app[web.1]: 0|silva-spark-md  | [8/8/2026, 9:57:22 AM] [INFO] Using WA v2.3000.1043857760, isLatest: true
+2026-08-08T09:57:22.805499+00:00 app[web.1]: 0|silva-spark-md  | [8/8/2026, 9:57:22 AM] [ERROR] Connection error: The value of "size" is out of range. It must be >= 0 && <= 9007199254740991. Received NaN
+2026-08-08T09:57:27.806017+00:00 app[web.1]: 0|silva-spark-md  | Connecting silva spark to WhatsApp ⏳️...
+2026-08-08T09:57:27.806315+00:00 app[web.1]: 0|silva-spark-md  | [8/8/2026, 9:57:27 AM] [SUCCESS] ✅ Session loaded successfully
+2026-08-08T09:57:27.815355+00:00 app[web.1]: 0|silva-spark-md  | [8/8/2026, 9:57:27 AM] [INFO] Using WA v2.3000.1043857760, isLatest: true
+2026-08-08T09:57:27.815985+00:00 app[web.1]: 0|silva-spark-md  | [8/8/2026, 9:57:27 AM] [ERROR] Connection error: The value of "size" is out of range. It must be >= 0 && <= 9007199254740991. Received NaN
+2026-08-08T09:57:32.816014+00:00 app[web.1]: 0|silva-spark-md  | Connecting silva spark to WhatsApp ⏳️...
+2026-08-08T09:57:32.825568+00:00 app[web.1]: 0|silva-spark-md  | [8/8/2026, 9:57:32 AM] [SUCCESS] ✅ Session loaded successfully
+2026-08-08T09:57:32.835900+00:00 app[web.1]: 0|silva-spark-md  | [8/8/2026, 9:57:32 AM] [INFO] Using WA v2.3000.1043857760, isLatest: true
+2026-08-08T09:57:32.836508+00:00 app[web.1]: 0|silva-spark-md  | [8/8/2026, 9:57:32 AM] [ERROR] Connection error: The value of "size" is out of range. It must be >= 0 && <= 9007199254740991. Received NaN

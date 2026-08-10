@@ -1,0 +1,200 @@
+2026-08-08T09:36:41.897582+00:00 app[web.1]: 0|silva-spark-md  |       _rejectUnauthorized: true,
+2026-08-08T09:36:41.897582+00:00 app[web.1]: 0|silva-spark-md  |       timeout: 5000,
+2026-08-08T09:36:41.897582+00:00 app[web.1]: 0|silva-spark-md  |       _httpMessage: null,
+2026-08-08T09:36:41.897583+00:00 app[web.1]: 0|silva-spark-md  |       parser: null,
+2026-08-08T09:36:41.897583+00:00 app[web.1]: 0|silva-spark-md  |       Symbol(alpncallback): null,
+2026-08-08T09:36:41.897583+00:00 app[web.1]: 0|silva-spark-md  |       Symbol(res): [TLSWrap],
+2026-08-08T09:36:41.897583+00:00 app[web.1]: 0|silva-spark-md  |       Symbol(verified): true,
+2026-08-08T09:36:41.897583+00:00 app[web.1]: 0|silva-spark-md  |       Symbol(pendingSession): null,
+2026-08-08T09:36:41.897583+00:00 app[web.1]: 0|silva-spark-md  |       Symbol(async_id_symbol): -1,
+2026-08-08T09:36:41.897584+00:00 app[web.1]: 0|silva-spark-md  |       Symbol(kHandle): [TLSWrap],
+2026-08-08T09:36:41.897584+00:00 app[web.1]: 0|silva-spark-md  |       Symbol(lastWriteQueueSize): 0,
+2026-08-08T09:36:41.897584+00:00 app[web.1]: 0|silva-spark-md  |       Symbol(timeout): Timeout {
+2026-08-08T09:36:41.897584+00:00 app[web.1]: 0|silva-spark-md  |         _idleTimeout: 5000,
+2026-08-08T09:36:41.897584+00:00 app[web.1]: 0|silva-spark-md  |         _idlePrev: [TimersList],
+2026-08-08T09:36:41.897584+00:00 app[web.1]: 0|silva-spark-md  |         _idleNext: [Timeout],
+2026-08-08T09:36:41.897584+00:00 app[web.1]: 0|silva-spark-md  |         _idleStart: 99529,
+2026-08-08T09:36:41.897585+00:00 app[web.1]: 0|silva-spark-md  |         _onTimeout: [Function: onStreamTimeout],
+2026-08-08T09:36:41.897585+00:00 app[web.1]: 0|silva-spark-md  |         _timerArgs: [Array],
+2026-08-08T09:36:41.897585+00:00 app[web.1]: 0|silva-spark-md  |         _repeat: null,
+2026-08-08T09:36:41.897585+00:00 app[web.1]: 0|silva-spark-md  |         _destroyed: false,
+2026-08-08T09:36:41.897585+00:00 app[web.1]: 0|silva-spark-md  |         Symbol(refed): false,
+2026-08-08T09:36:41.897586+00:00 app[web.1]: 0|silva-spark-md  |         Symbol(kHasPrimitive): false,
+2026-08-08T09:36:41.897586+00:00 app[web.1]: 0|silva-spark-md  |         Symbol(asyncId): 3018,
+2026-08-08T09:36:41.897586+00:00 app[web.1]: 0|silva-spark-md  |         Symbol(triggerId): 3016,
+2026-08-08T09:36:41.897588+00:00 app[web.1]: 0|silva-spark-md  |         Symbol(kAsyncContextFrame): undefined
+2026-08-08T09:36:41.897588+00:00 app[web.1]: 0|silva-spark-md  |       },
+2026-08-08T09:36:41.897589+00:00 app[web.1]: 0|silva-spark-md  |       Symbol(kBuffer): null,
+2026-08-08T09:36:41.897589+00:00 app[web.1]: 0|silva-spark-md  |       Symbol(kBufferCb): null,
+2026-08-08T09:36:41.897589+00:00 app[web.1]: 0|silva-spark-md  |       Symbol(kBufferGen): null,
+2026-08-08T09:36:41.897589+00:00 app[web.1]: 0|silva-spark-md  |       Symbol(shapeMode): true,
+2026-08-08T09:36:41.897589+00:00 app[web.1]: 0|silva-spark-md  |       Symbol(kCapture): false,
+2026-08-08T09:36:41.897590+00:00 app[web.1]: 0|silva-spark-md  |       Symbol(kSetNoDelay): true,
+2026-08-08T09:36:41.897590+00:00 app[web.1]: 0|silva-spark-md  |       Symbol(kSetKeepAlive): true,
+2026-08-08T09:36:41.897590+00:00 app[web.1]: 0|silva-spark-md  |       Symbol(kSetKeepAliveInitialDelay): 1,
+2026-08-08T09:36:41.897590+00:00 app[web.1]: 0|silva-spark-md  |       Symbol(kSetTOS): undefined,
+2026-08-08T09:36:41.897591+00:00 app[web.1]: 0|silva-spark-md  |       Symbol(kBytesRead): 0,
+2026-08-08T09:36:41.897591+00:00 app[web.1]: 0|silva-spark-md  |       Symbol(kBytesWritten): 0,
+2026-08-08T09:36:41.897591+00:00 app[web.1]: 0|silva-spark-md  |       Symbol(connect-options): [Object],
+2026-08-08T09:36:41.897591+00:00 app[web.1]: 0|silva-spark-md  |       Symbol(kSetKeepAliveInterval): undefined,
+2026-08-08T09:36:41.897592+00:00 app[web.1]: 0|silva-spark-md  |       Symbol(kSetKeepAliveCount): undefined,
+2026-08-08T09:36:41.897592+00:00 app[web.1]: 0|silva-spark-md  |       Symbol(axios.http.socketListener): true,
+2026-08-08T09:36:41.897592+00:00 app[web.1]: 0|silva-spark-md  |       Symbol(axios.http.currentReq): [Writable]
+2026-08-08T09:36:41.897592+00:00 app[web.1]: 0|silva-spark-md  |     },
+2026-08-08T09:36:41.897593+00:00 app[web.1]: 0|silva-spark-md  |     Symbol(kOutHeaders): [Object: null prototype] {
+2026-08-08T09:36:41.897593+00:00 app[web.1]: 0|silva-spark-md  |       accept: [Array],
+2026-08-08T09:36:41.897593+00:00 app[web.1]: 0|silva-spark-md  |       'user-agent': [Array],
+2026-08-08T09:36:41.897593+00:00 app[web.1]: 0|silva-spark-md  |       'accept-encoding': [Array],
+2026-08-08T09:36:41.897593+00:00 app[web.1]: 0|silva-spark-md  |       host: [Array]
+2026-08-08T09:36:41.897594+00:00 app[web.1]: 0|silva-spark-md  |     },
+2026-08-08T09:36:41.897594+00:00 app[web.1]: 0|silva-spark-md  |     Symbol(errored): null,
+2026-08-08T09:36:41.897594+00:00 app[web.1]: 0|silva-spark-md  |     Symbol(kHighWaterMark): 65536,
+2026-08-08T09:36:41.897594+00:00 app[web.1]: 0|silva-spark-md  |     Symbol(kRejectNonStandardBodyWrites): false,
+2026-08-08T09:36:41.897594+00:00 app[web.1]: 0|silva-spark-md  |     Symbol(kPath): '/2xxr9h.mp4',
+2026-08-08T09:36:41.897594+00:00 app[web.1]: 0|silva-spark-md  |     Symbol(kUniqueHeaders): null
+2026-08-08T09:36:41.897596+00:00 app[web.1]: 0|silva-spark-md  |   },
+2026-08-08T09:36:41.897597+00:00 app[web.1]: 0|silva-spark-md  |   response: {
+2026-08-08T09:36:41.897615+00:00 app[web.1]: 0|silva-spark-md  |     status: 404,
+2026-08-08T09:36:41.897615+00:00 app[web.1]: 0|silva-spark-md  |     statusText: 'Not Found',
+2026-08-08T09:36:41.897631+00:00 app[web.1]: 0|silva-spark-md  |     headers: Object [AxiosHeaders] {
+2026-08-08T09:36:41.897631+00:00 app[web.1]: 0|silva-spark-md  |       server: 'nginx',
+2026-08-08T09:36:41.897647+00:00 app[web.1]: 0|silva-spark-md  |       date: 'Sat, 08 Aug 2026 09:36:41 GMT',
+2026-08-08T09:36:41.897647+00:00 app[web.1]: 0|silva-spark-md  |       'content-type': 'text/html; charset=UTF-8',
+2026-08-08T09:36:41.897713+00:00 app[web.1]: 0|silva-spark-md  |       'transfer-encoding': 'chunked',
+2026-08-08T09:36:41.897713+00:00 app[web.1]: 0|silva-spark-md  |       connection: 'keep-alive',
+2026-08-08T09:36:41.897715+00:00 app[web.1]: 0|silva-spark-md  |       vary: 'Accept-Encoding',
+2026-08-08T09:36:41.897717+00:00 app[web.1]: 0|silva-spark-md  |       'content-security-policy': "default-src 'self'; connect-src https://googlecdn.org https://perfops3.byteperf.com https://perfops2.byteperf.com https://perfops3.byte-test.com https://perfops1.byteperf.com https://devnull.perfops.net https://*.test.resolver.perfops.net https://test-perfops.wedos.delivery https://cdn.perftest.f5-cloud-demo.com https://test-perfops.blazingcdn.com https://eo-perfops4.qcloudteo.com https://eo-perfops6.qcloudteo.com https://perfops.cloudflareperf.com https://eo-perfops10.qcloudteo.com https://perf-test.sufycdn.com https://eo-perfops8.qcloudteo.com https://cdn.jsdelivr.net https://eo-perfops1.qcloudteo.com https://perf.qinglanbaseunicast.com https://d3888oxgux3fey.cloudfront.net https://eo-static-perfops.qcloudcdn.com https://cdn23602612.ahacdn.me https://rum.perfops.cdb.cdn.orange.com https://perfops.byte-test.com https://akamai-cdn.perfops.io https://eo-static-perfops1.qcloudcdn.com https://cdnperf.cachefly.net https://medianova-cdnperf.mncdn.com https://djlzvy5xcvhxt.cloudfront.net https://1596384882.rsc.cdn77.org https://d161f70cbh7kx6.cloudfront.net https://medianova-cdnvperf.mncdn.com https://cdnperf.vergecloud.com https://perfops.gcorelabs.com https://25748s.ha.azioncdn.net https://test-perfops.haproxy.com https://perfops.swiftycdn.net https://perfops2.byte-test.com https://eo-perfops5.qcloudteo.com https://ultrawaf.canary.scrubbingcenter.com https://eo-perfops9.qcloudteo.com https://cdnperf-rum.cdnetworks.net https://perfops.edge.run https://eo-perfops2.qcloudteo.com https://eo-static-perfops3.qcloudcdn.com https://ovh-cdn.perfops.io https://eo-perfops7.qcloudteo.com https://afdcdnperf-e8aeffg7frd0a3c0.z01.azurefd.net https://proxy.canary.scrubbingcenter.com https://perfops1.b-cdn.net https://perfops-bench.sos-ch-gva-2.exoscale-cdn.com https://eo-perfops3.qcloudteo.com https://perfops-static.freetls.fastly.net https://perfopsrumapi.akamaized.net https://test-perfops.ldgslb.com https://cpt96125.shopvoxpopulus.com https://perfopsrum.akamaized.net https://perfopsrum-eip.akamaized.net https://eo-static-perfops2.qcloudcdn.com https://perfops.test.edgekey.net https://test-perfops.idevops.suijinetworks.com https://cdnperf-rum.quantil.com https://rum.perfops.mdb.cdn.orange.com https://rum-cdn.perfops.net 'self'; img-src 'self' https://quickchart.io https://files.catbox.moe; media-src 'self' https://files.catbox.moe; style-src 'self' 'unsafe-inline'; script-src https://www.google.com https://www.gstatic.com https://cdn.perfops.net 'self' 'unsafe-inline'; frame-src https://www.google.com;"
+2026-08-08T09:36:41.897717+00:00 app[web.1]: 0|silva-spark-md  |     },
+2026-08-08T09:36:41.897718+00:00 app[web.1]: 0|silva-spark-md  |     config: [Object: null prototype] {
+2026-08-08T09:36:41.897718+00:00 app[web.1]: 0|silva-spark-md  |       transitional: [Object],
+2026-08-08T09:36:41.897719+00:00 app[web.1]: 0|silva-spark-md  |       adapter: [Array],
+2026-08-08T09:36:41.897719+00:00 app[web.1]: 0|silva-spark-md  |       transformRequest: [Array],
+2026-08-08T09:36:41.897720+00:00 app[web.1]: 0|silva-spark-md  |       transformResponse: [Array],
+2026-08-08T09:36:41.897738+00:00 app[web.1]: 0|silva-spark-md  |       timeout: 0,
+2026-08-08T09:36:41.897739+00:00 app[web.1]: 0|silva-spark-md  |       xsrfCookieName: 'XSRF-TOKEN',
+2026-08-08T09:36:41.897755+00:00 app[web.1]: 0|silva-spark-md  |       xsrfHeaderName: 'X-XSRF-TOKEN',
+2026-08-08T09:36:41.897755+00:00 app[web.1]: 0|silva-spark-md  |       maxContentLength: -1,
+2026-08-08T09:36:41.897771+00:00 app[web.1]: 0|silva-spark-md  |       maxBodyLength: -1,
+2026-08-08T09:36:41.897772+00:00 app[web.1]: 0|silva-spark-md  |       env: [Object],
+2026-08-08T09:36:41.897788+00:00 app[web.1]: 0|silva-spark-md  |       validateStatus: [Function: validateStatus],
+2026-08-08T09:36:41.897788+00:00 app[web.1]: 0|silva-spark-md  |       headers: [Object [AxiosHeaders]],
+2026-08-08T09:36:41.897805+00:00 app[web.1]: 0|silva-spark-md  |       responseType: 'stream',
+2026-08-08T09:36:41.897805+00:00 app[web.1]: 0|silva-spark-md  |       method: 'get',
+2026-08-08T09:36:41.897821+00:00 app[web.1]: 0|silva-spark-md  |       url: 'https://files.catbox.moe/2xxr9h.mp4',
+2026-08-08T09:36:41.897821+00:00 app[web.1]: 0|silva-spark-md  |       allowAbsoluteUrls: true,
+2026-08-08T09:36:41.897837+00:00 app[web.1]: 0|silva-spark-md  |       data: undefined
+2026-08-08T09:36:41.897838+00:00 app[web.1]: 0|silva-spark-md  |     },
+2026-08-08T09:36:41.897854+00:00 app[web.1]: 0|silva-spark-md  |     request: <ref *1> ClientRequest {
+2026-08-08T09:36:41.897854+00:00 app[web.1]: 0|silva-spark-md  |       _events: [Object: null prototype],
+2026-08-08T09:36:41.897867+00:00 app[web.1]: 0|silva-spark-md  |       _eventsCount: 7,
+2026-08-08T09:36:41.897867+00:00 app[web.1]: 0|silva-spark-md  |       _maxListeners: undefined,
+2026-08-08T09:36:41.897882+00:00 app[web.1]: 0|silva-spark-md  |       outputData: [],
+2026-08-08T09:36:41.897884+00:00 app[web.1]: 0|silva-spark-md  |       outputSize: 0,
+2026-08-08T09:36:41.897909+00:00 app[web.1]: 0|silva-spark-md  |       writable: true,
+2026-08-08T09:36:41.897909+00:00 app[web.1]: 0|silva-spark-md  |       destroyed: true,
+2026-08-08T09:36:41.897910+00:00 app[web.1]: 0|silva-spark-md  |       _last: true,
+2026-08-08T09:36:41.897921+00:00 app[web.1]: 0|silva-spark-md  |       chunkedEncoding: false,
+2026-08-08T09:36:41.897923+00:00 app[web.1]: 0|silva-spark-md  |       shouldKeepAlive: true,
+2026-08-08T09:36:41.897934+00:00 app[web.1]: 0|silva-spark-md  |       maxRequestsOnConnectionReached: false,
+2026-08-08T09:36:41.897945+00:00 app[web.1]: 0|silva-spark-md  |       _defaultKeepAlive: true,
+2026-08-08T09:36:41.897945+00:00 app[web.1]: 0|silva-spark-md  |       useChunkedEncodingByDefault: false,
+2026-08-08T09:36:41.897960+00:00 app[web.1]: 0|silva-spark-md  |       sendDate: false,
+2026-08-08T09:36:41.897960+00:00 app[web.1]: 0|silva-spark-md  |       _removedConnection: false,
+2026-08-08T09:36:41.897971+00:00 app[web.1]: 0|silva-spark-md  |       _removedContLen: false,
+2026-08-08T09:36:41.897972+00:00 app[web.1]: 0|silva-spark-md  |       _removedTE: false,
+2026-08-08T09:36:41.897982+00:00 app[web.1]: 0|silva-spark-md  |       strictContentLength: false,
+2026-08-08T09:36:41.897987+00:00 app[web.1]: 0|silva-spark-md  |       _contentLength: 0,
+2026-08-08T09:36:41.897998+00:00 app[web.1]: 0|silva-spark-md  |       _hasBody: true,
+2026-08-08T09:36:41.897999+00:00 app[web.1]: 0|silva-spark-md  |       _trailer: '',
+2026-08-08T09:36:41.898010+00:00 app[web.1]: 0|silva-spark-md  |       finished: true,
+2026-08-08T09:36:41.898026+00:00 app[web.1]: 0|silva-spark-md  |       _headerSent: true,
+2026-08-08T09:36:41.898026+00:00 app[web.1]: 0|silva-spark-md  |       _closed: true,
+2026-08-08T09:36:41.898038+00:00 app[web.1]: 0|silva-spark-md  |       _header: 'GET /2xxr9h.mp4 HTTP/1.1\r\n' +
+2026-08-08T09:36:41.898038+00:00 app[web.1]: 0|silva-spark-md  |         'Accept: application/json, text/plain, */*\r\n' +
+2026-08-08T09:36:41.898049+00:00 app[web.1]: 0|silva-spark-md  |         'User-Agent: axios/1.19.0\r\n' +
+2026-08-08T09:36:41.898050+00:00 app[web.1]: 0|silva-spark-md  |         'Accept-Encoding: gzip, compress, deflate, br\r\n' +
+2026-08-08T09:36:41.898061+00:00 app[web.1]: 0|silva-spark-md  |         'Host: files.catbox.moe\r\n' +
+2026-08-08T09:36:41.898072+00:00 app[web.1]: 0|silva-spark-md  |         'Connection: keep-alive\r\n' +
+2026-08-08T09:36:41.898073+00:00 app[web.1]: 0|silva-spark-md  |         '\r\n',
+2026-08-08T09:36:41.898088+00:00 app[web.1]: 0|silva-spark-md  |       _keepAliveTimeout: 0,
+2026-08-08T09:36:41.898088+00:00 app[web.1]: 0|silva-spark-md  |       _onPendingData: [Function: nop],
+2026-08-08T09:36:41.898099+00:00 app[web.1]: 0|silva-spark-md  |       agent: [Agent],
+2026-08-08T09:36:41.898100+00:00 app[web.1]: 0|silva-spark-md  |       socketPath: undefined,
+2026-08-08T09:36:41.898111+00:00 app[web.1]: 0|silva-spark-md  |       method: 'GET',
+2026-08-08T09:36:41.898126+00:00 app[web.1]: 0|silva-spark-md  |       maxHeaderSize: undefined,
+2026-08-08T09:36:41.898127+00:00 app[web.1]: 0|silva-spark-md  |       insecureHTTPParser: false,
+2026-08-08T09:36:41.898138+00:00 app[web.1]: 0|silva-spark-md  |       httpValidation: undefined,
+2026-08-08T09:36:41.898138+00:00 app[web.1]: 0|silva-spark-md  |       joinDuplicateHeaders: undefined,
+2026-08-08T09:36:41.898153+00:00 app[web.1]: 0|silva-spark-md  |       _ended: true,
+2026-08-08T09:36:41.898154+00:00 app[web.1]: 0|silva-spark-md  |       res: [IncomingMessage],
+2026-08-08T09:36:41.898165+00:00 app[web.1]: 0|silva-spark-md  |       aborted: false,
+2026-08-08T09:36:41.898167+00:00 app[web.1]: 0|silva-spark-md  |       timeoutCb: null,
+2026-08-08T09:36:41.898184+00:00 app[web.1]: 0|silva-spark-md  |       upgradeOrConnect: false,
+2026-08-08T09:36:41.898185+00:00 app[web.1]: 0|silva-spark-md  |       parser: null,
+2026-08-08T09:36:41.898207+00:00 app[web.1]: 0|silva-spark-md  |       maxHeadersCount: null,
+2026-08-08T09:36:41.898234+00:00 app[web.1]: 0|silva-spark-md  |       reusedSocket: false,
+2026-08-08T09:36:41.898234+00:00 app[web.1]: 0|silva-spark-md  |       host: 'files.catbox.moe',
+2026-08-08T09:36:41.898251+00:00 app[web.1]: 0|silva-spark-md  |       protocol: 'https:',
+2026-08-08T09:36:41.898251+00:00 app[web.1]: 0|silva-spark-md  |       _redirectable: [Writable],
+2026-08-08T09:36:41.898268+00:00 app[web.1]: 0|silva-spark-md  |       Symbol(shapeMode): false,
+2026-08-08T09:36:41.898268+00:00 app[web.1]: 0|silva-spark-md  |       Symbol(kCapture): false,
+2026-08-08T09:36:41.898285+00:00 app[web.1]: 0|silva-spark-md  |       Symbol(kBytesWritten): 0,
+2026-08-08T09:36:41.898285+00:00 app[web.1]: 0|silva-spark-md  |       Symbol(kNeedDrain): false,
+2026-08-08T09:36:41.898301+00:00 app[web.1]: 0|silva-spark-md  |       Symbol(corked): 0,
+2026-08-08T09:36:41.898301+00:00 app[web.1]: 0|silva-spark-md  |       Symbol(kChunkedBuffer): [],
+2026-08-08T09:36:41.898314+00:00 app[web.1]: 0|silva-spark-md  |       Symbol(kChunkedLength): 0,
+2026-08-08T09:36:41.898314+00:00 app[web.1]: 0|silva-spark-md  |       Symbol(kSocket): [TLSSocket],
+2026-08-08T09:36:41.898330+00:00 app[web.1]: 0|silva-spark-md  |       Symbol(kOutHeaders): [Object: null prototype],
+2026-08-08T09:36:41.898330+00:00 app[web.1]: 0|silva-spark-md  |       Symbol(errored): null,
+2026-08-08T09:36:41.898346+00:00 app[web.1]: 0|silva-spark-md  |       Symbol(kHighWaterMark): 65536,
+2026-08-08T09:36:41.898346+00:00 app[web.1]: 0|silva-spark-md  |       Symbol(kRejectNonStandardBodyWrites): false,
+2026-08-08T09:36:41.898362+00:00 app[web.1]: 0|silva-spark-md  |       Symbol(kPath): '/2xxr9h.mp4',
+2026-08-08T09:36:41.898362+00:00 app[web.1]: 0|silva-spark-md  |       Symbol(kUniqueHeaders): null
+2026-08-08T09:36:41.898371+00:00 app[web.1]: 0|silva-spark-md  |     },
+2026-08-08T09:36:41.898383+00:00 app[web.1]: 0|silva-spark-md  |     data: Unzip {
+2026-08-08T09:36:41.898398+00:00 app[web.1]: 0|silva-spark-md  |       _writeState: [Uint32Array],
+2026-08-08T09:36:41.898409+00:00 app[web.1]: 0|silva-spark-md  |       _events: [Object],
+2026-08-08T09:36:41.898422+00:00 app[web.1]: 0|silva-spark-md  |       _readableState: [ReadableState],
+2026-08-08T09:36:41.898422+00:00 app[web.1]: 0|silva-spark-md  |       _writableState: [WritableState],
+2026-08-08T09:36:41.898438+00:00 app[web.1]: 0|silva-spark-md  |       allowHalfOpen: true,
+2026-08-08T09:36:41.898438+00:00 app[web.1]: 0|silva-spark-md  |       _maxListeners: undefined,
+2026-08-08T09:36:41.898454+00:00 app[web.1]: 0|silva-spark-md  |       _eventsCount: 5,
+2026-08-08T09:36:41.898454+00:00 app[web.1]: 0|silva-spark-md  |       bytesWritten: 0,
+2026-08-08T09:36:41.898470+00:00 app[web.1]: 0|silva-spark-md  |       _handle: [Zlib],
+2026-08-08T09:36:41.898473+00:00 app[web.1]: 0|silva-spark-md  |       _outBuffer: <Buffer 3c 68 74 6d 6c 3e 0a 0a 3c 68 65 61 64 3e 0a 3c 6c 69 6e 6b 20 72 65 6c 3d 22 73 74 79 6c 65 73 68 65 65 74 22 20 68 72 65 66 3d 22 2f 6f 66 66 69 63 ... 16334 more bytes>,
+2026-08-08T09:36:41.898490+00:00 app[web.1]: 0|silva-spark-md  |       _outOffset: 0,
+2026-08-08T09:36:41.898490+00:00 app[web.1]: 0|silva-spark-md  |       _chunkSize: 16384,
+2026-08-08T09:36:41.898503+00:00 app[web.1]: 0|silva-spark-md  |       _defaultFlushFlag: 2,
+2026-08-08T09:36:41.898503+00:00 app[web.1]: 0|silva-spark-md  |       _finishFlushFlag: 2,
+2026-08-08T09:36:41.898518+00:00 app[web.1]: 0|silva-spark-md  |       _defaultFullFlushFlag: 3,
+2026-08-08T09:36:41.898519+00:00 app[web.1]: 0|silva-spark-md  |       _flushBoundIdx: 0,
+2026-08-08T09:36:41.898547+00:00 app[web.1]: 0|silva-spark-md  |       _info: undefined,
+2026-08-08T09:36:41.898573+00:00 app[web.1]: 0|silva-spark-md  |       _maxOutputLength: 9007199254740991,
+2026-08-08T09:36:41.898589+00:00 app[web.1]: 0|silva-spark-md  |       _rejectGarbageAfterEnd: false,
+2026-08-08T09:36:41.898590+00:00 app[web.1]: 0|silva-spark-md  |       _level: -1,
+2026-08-08T09:36:41.898606+00:00 app[web.1]: 0|silva-spark-md  |       _strategy: 0,
+2026-08-08T09:36:41.898606+00:00 app[web.1]: 0|silva-spark-md  |       _mode: 7,
+2026-08-08T09:36:41.898623+00:00 app[web.1]: 0|silva-spark-md  |       Symbol(shapeMode): true,
+2026-08-08T09:36:41.898623+00:00 app[web.1]: 0|silva-spark-md  |       Symbol(kCapture): false,
+2026-08-08T09:36:41.898639+00:00 app[web.1]: 0|silva-spark-md  |       Symbol(kCallback): null,
+2026-08-08T09:36:41.898640+00:00 app[web.1]: 0|silva-spark-md  |       Symbol(kError): null
+2026-08-08T09:36:41.898652+00:00 app[web.1]: 0|silva-spark-md  |     }
+2026-08-08T09:36:41.898663+00:00 app[web.1]: 0|silva-spark-md  |   },
+2026-08-08T09:36:41.898664+00:00 app[web.1]: 0|silva-spark-md  |   status: 404
+2026-08-08T09:36:41.898675+00:00 app[web.1]: 0|silva-spark-md  | }
+2026-08-08T09:36:41.997755+00:00 app[web.1]: 0|silva-spark-md  | Failed to decrypt message with any known session...
+2026-08-08T09:36:41.997863+00:00 app[web.1]: 0|silva-spark-md  | Session error:Error: Bad MAC Error: Bad MAC
+2026-08-08T09:36:41.997865+00:00 app[web.1]: 0|silva-spark-md  |     at Object.verifyMAC (/app/node_modules/libsignal/src/crypto.js:87:15)
+2026-08-08T09:36:41.997882+00:00 app[web.1]: 0|silva-spark-md  |     at SessionCipher.doDecryptWhisperMessage (/app/node_modules/libsignal/src/session_cipher.js:250:16)
+2026-08-08T09:36:41.997884+00:00 app[web.1]: 0|silva-spark-md  |     at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+2026-08-08T09:36:41.997903+00:00 app[web.1]: 0|silva-spark-md  |     at async SessionCipher.decryptWithSessions (/app/node_modules/libsignal/src/session_cipher.js:147:29)
+2026-08-08T09:36:41.997921+00:00 app[web.1]: 0|silva-spark-md  |     at async 81712071631074.0 [as awaitable] (/app/node_modules/libsignal/src/session_cipher.js:171:28)
+2026-08-08T09:36:41.997921+00:00 app[web.1]: 0|silva-spark-md  |     at async _asyncQueueExecutor (/app/node_modules/libsignal/src/queue_job.js:20:29)
+2026-08-08T09:36:47.241856+00:00 app[web.1]: 0|silva-spark-md  | Failed to decrypt message with any known session...
+2026-08-08T09:36:47.241961+00:00 app[web.1]: 0|silva-spark-md  | Session error:Error: Bad MAC Error: Bad MAC
+2026-08-08T09:36:47.241963+00:00 app[web.1]: 0|silva-spark-md  |     at Object.verifyMAC (/app/node_modules/libsignal/src/crypto.js:87:15)
+2026-08-08T09:36:47.241966+00:00 app[web.1]: 0|silva-spark-md  |     at SessionCipher.doDecryptWhisperMessage (/app/node_modules/libsignal/src/session_cipher.js:250:16)
+2026-08-08T09:36:47.241967+00:00 app[web.1]: 0|silva-spark-md  |     at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+2026-08-08T09:36:47.241968+00:00 app[web.1]: 0|silva-spark-md  |     at async SessionCipher.decryptWithSessions (/app/node_modules/libsignal/src/session_cipher.js:147:29)
+2026-08-08T09:36:47.241971+00:00 app[web.1]: 0|silva-spark-md  |     at async 81712071631074.0 [as awaitable] (/app/node_modules/libsignal/src/session_cipher.js:171:28)
+2026-08-08T09:36:47.241979+00:00 app[web.1]: 0|silva-spark-md  |     at async _asyncQueueExecutor (/app/node_modules/libsignal/src/queue_job.js:20:29)

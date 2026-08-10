@@ -2,6 +2,7 @@ const { cmd } = require('../command');
 const os = require('os');
 const { runtime } = require('../lib/functions');
 const pkg = require('../package.json'); // Get version from package.json
+const config = require('../config');
 
 cmd({
   pattern: "alive",
@@ -34,7 +35,7 @@ cmd({
 `;
 
     await conn.sendMessage(from, {
-      video: { url: 'https://files.catbox.moe/2xxr9h.mp4' },
+      image: { url: config.ALIVE_IMG },
       caption,
       gifPlayback: true,
       contextInfo: {
