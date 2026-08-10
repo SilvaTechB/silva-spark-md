@@ -274,7 +274,15 @@ async function connectToWA() {
         let version, isLatest;
         try {
             const result = await fetchLatestBaileysVersion();
-            version = result.version;
+            const fetchedVersion = result.version;
+            if (
+                !Array.isArray(fetchedVersion) ||
+                fetchedVersion.length !== 3 ||
+                fetchedVersion.some((part) => !Number.isInteger(part) || part < 0)
+            ) {
+                throw new Error(`Invalid WhatsApp version returned: ${JSON.stringify(fetchedVersion)}`);
+            }
+            version = fetchedVersion;
             isLatest = result.isLatest;
             botLogger.log('INFO', `Using WA v${version.join('.')}, isLatest: ${isLatest}`)
         } catch (e) {
@@ -1026,7 +1034,7 @@ async function connectToWA() {
         return conn;
 
     } catch (error) {
-        botLogger.log('ERROR', 'Connection error: ' + error.message);
+        botLogger.log('ERROR', 'Connection error: ' + (error.stack || error.message));
         isReconnecting = false;
         setTimeout(connectToWA, 5000);
     }

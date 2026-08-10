@@ -1,0 +1,1 @@
+- [Imported WhatsApp bot dependencies](imported-whatsapp-bot.md) — Baileys and deprecated transitive shims may be blocked by the package firewall; never bypass it.

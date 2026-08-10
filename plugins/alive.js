@@ -37,7 +37,6 @@ cmd({
     await conn.sendMessage(from, {
       image: { url: config.ALIVE_IMG },
       caption,
-      gifPlayback: true,
       contextInfo: {
         mentionedJid: [sender],
         forwardingScore: 999,
