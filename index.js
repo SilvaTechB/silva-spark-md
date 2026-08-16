@@ -129,6 +129,7 @@ async function loadSession() {
     try {
         const sessionDir = path.join(__dirname, 'sessions')
         const credsPath = path.join(sessionDir, 'creds.json');
+        let hasUsableLocalSession = false;
 
         if (!fs.existsSync(sessionDir)) {
             fs.mkdirSync(sessionDir, { recursive: true });
@@ -140,23 +141,34 @@ async function loadSession() {
                 if (!credsData || !credsData.me || !credsData.me.id) {
                     fs.unlinkSync(credsPath);
                     botLogger.log('INFO', "♻️ Invalid session removed");
-                    return false;
-                }
-                if (credsData.registration && credsData.registration.timestamp) {
+                } else if (credsData.registration && credsData.registration.timestamp) {
                     const sessionAge = Date.now() - credsData.registration.timestamp;
                     if (sessionAge > 30 * 24 * 60 * 60 * 1000) {
                         fs.unlinkSync(credsPath);
                         botLogger.log('INFO', "♻️ Session expired (older than 30 days)");
-                        return false;
+                    } else {
+                        hasUsableLocalSession = true;
                     }
+                } else {
+                    hasUsableLocalSession = true;
                 }
             } catch (e) {
                 try {
                     fs.unlinkSync(credsPath);
                     botLogger.log('INFO', "♻️ Corrupted session removed");
                 } catch (err) {}
-                return false;
             }
+        }
+
+        /*
+         * Do not overwrite an active multi-file session with the original
+         * SESSION_ID on every restart. SESSION_ID is only a bootstrap
+         * credential for a fresh filesystem. Replacing current creds with an
+         * older copy causes "No sessions" and repeated "Bad MAC" errors.
+         */
+        if (hasUsableLocalSession) {
+            botLogger.log('INFO', "Existing local session kept; SESSION_ID was not reloaded");
+            return true;
         }
 
         if (!config.SESSION_ID || typeof config.SESSION_ID !== 'string' || config.SESSION_ID === '') {
@@ -295,6 +307,77 @@ const getStatusReactionKey = (message) => {
         id: message.key.id,
         participant
     };
+};
+
+const STATUS_REACTION_TIMEOUT_MS = 8000;
+const STATUS_REACTION_COOLDOWN_MS = 5 * 60 * 1000;
+const statusReactionsInFlight = new Set();
+let statusReactionTimeouts = 0;
+let statusReactionsDisabledUntil = 0;
+
+const withTimeout = (promise, timeoutMs, message) => {
+    let timeout;
+    const timeoutPromise = new Promise((_, reject) => {
+        timeout = setTimeout(() => reject(new Error(message)), timeoutMs);
+    });
+
+    return Promise.race([promise, timeoutPromise]).finally(() => {
+        clearTimeout(timeout);
+    });
+};
+
+const sendStatusReaction = async (conn, message) => {
+    const statusKey = getStatusReactionKey(message);
+    const statusOwner = statusKey?.participant;
+    const botJid = normalizeJid(conn.user?.id);
+
+    if (
+        !statusKey ||
+        !statusOwner ||
+        statusOwner === botJid ||
+        statusReactionsDisabledUntil > Date.now() ||
+        statusReactionsInFlight.has(statusKey.id)
+    ) {
+        return;
+    }
+
+    statusReactionsInFlight.add(statusKey.id);
+
+    try {
+        const emojis = ['❤️', '💸', '😇', '🍂', '💥', '💯', '🔥', '💫', '💎', '💗', '🤍', '🖤', '👀', '🙌', '🙆', '🚩', '🥰', '💐', '😎', '🤎', '✅', '🫀', '🧡', '😁', '😄', '🌸', '🕊️', '🌷', '⛅', '🌟', '🗿', '💜', '💙', '🌝', '🖤', '💚'];
+        const randomEmoji = emojis[Math.floor(Math.random() * emojis.length)];
+
+        /*
+         * A status reaction is optional. Never let a slow/rejected status
+         * request block the normal messages.upsert command pipeline.
+         */
+        await withTimeout(
+            conn.sendMessage('status@broadcast', {
+                react: {
+                    text: randomEmoji,
+                    key: statusKey,
+                }
+            }, { statusJidList: [statusOwner] }),
+            STATUS_REACTION_TIMEOUT_MS,
+            'Status reaction timed out',
+        );
+
+        statusReactionTimeouts = 0;
+    } catch (error) {
+        const errorText = String(error?.message || error);
+        if (/timed out/i.test(errorText)) {
+            statusReactionTimeouts += 1;
+            if (statusReactionTimeouts >= 3) {
+                statusReactionsDisabledUntil = Date.now() + STATUS_REACTION_COOLDOWN_MS;
+                statusReactionTimeouts = 0;
+                console.log('Status reactions paused for 5 minutes after repeated timeouts');
+            }
+        } else if (!/not-acceptable|forbidden|unauthorized/i.test(errorText)) {
+            console.log('Status react error:', errorText);
+        }
+    } finally {
+        statusReactionsInFlight.delete(statusKey.id);
+    }
 };
 
 //=============================================
@@ -597,33 +680,9 @@ async function connectToWA() {
                 }
 
                 if (isStatus && config.AUTO_STATUS_REACT === "true") {
-                    try {
-                        const statusKey = getStatusReactionKey(mek);
-                        const statusOwner = statusKey?.participant;
-                        const botJid = normalizeJid(conn.user?.id);
-
-                        if (statusKey && statusOwner && statusOwner !== botJid) {
-                            const emojis = ['❤️', '💸', '😇', '🍂', '💥', '💯', '🔥', '💫', '💎', '💗', '🤍', '🖤', '👀', '🙌', '🙆', '🚩', '🥰', '💐', '😎', '🤎', '✅', '🫀', '🧡', '😁', '😄', '🌸', '🕊️', '🌷', '⛅', '🌟', '🗿', '💜', '💙', '🌝', '🖤', '💚'];
-                            const randomEmoji = emojis[Math.floor(Math.random() * emojis.length)];
-
-                            /*
-                             * IMPORTANT: statusJidList must contain only the
-                             * status owner. Including the bot JID causes
-                             * WhatsApp to return "not-acceptable".
-                             */
-                            await conn.sendMessage('status@broadcast', {
-                                react: {
-                                    text: randomEmoji,
-                                    key: statusKey,
-                                }
-                            }, { statusJidList: [statusOwner] });
-                        }
-                    } catch (e) {
-                        const errorText = String(e?.message || e);
-                        if (!/not-acceptable|forbidden|unauthorized/i.test(errorText)) {
-                            console.log('Status react error:', errorText);
-                        }
-                    }
+                    // Status reactions are deliberately fire-and-forget so a
+                    // WhatsApp timeout cannot delay group command handling.
+                    void sendStatusReaction(conn, mek);
                 }
 
                 if (isStatus && config.AUTO_STATUS_REPLY === "true") {
@@ -720,7 +779,11 @@ async function connectToWA() {
 
                 if (isGroup) {
                     try {
-                        groupMetadata = await conn.groupMetadata(from)
+                        groupMetadata = await withTimeout(
+                            conn.groupMetadata(from),
+                            10000,
+                            'Group metadata timed out',
+                        )
                         groupName = groupMetadata?.subject || ''
                         participants = Array.isArray(groupMetadata?.participants)
                             ? groupMetadata.participants
@@ -1077,7 +1140,7 @@ async function connectToWA() {
                     if (config.AUTO_REACT === 'true') {
                         const reactions = ['😊', '👍', '😂', '💯', '🔥', '🙏', '🎉', '👏', '😎', '🤖'];
                         const randomReaction = reactions[Math.floor(Math.random() * reactions.length)];
-                        await Promise.resolve(m.react(randomReaction)).catch(e => console.log('Auto react error:', e.message));
+                        void Promise.resolve(m.react(randomReaction)).catch(e => console.log('Auto react error:', e.message));
                     }
                 }
 
@@ -1085,13 +1148,13 @@ async function connectToWA() {
                     if (config.CUSTOM_REACT === 'true') {
                         const reactions = (config.CUSTOM_REACT_EMOJIS || '💝,💖,💗,❤️‍🔥,❤️‍🩹,❤️,🩷,🧡,💛,💚,💙,🩵,💜,🤎,🖤,🤍').split(',');
                         const randomReaction = reactions[Math.floor(Math.random() * reactions.length)].trim();
-                        await Promise.resolve(m.react(randomReaction)).catch(e => console.log('Custom react error:', e.message));
+                        void Promise.resolve(m.react(randomReaction)).catch(e => console.log('Custom react error:', e.message));
                     }
                 }
 
                 if (!isReact && senderNumber !== botNumber) {
                     if (config.HEART_REACT === 'true') {
-                        await Promise.resolve(m.react('❤️')).catch(e => console.log('Heart react error:', e.message));
+                        void Promise.resolve(m.react('❤️')).catch(e => console.log('Heart react error:', e.message));
                     }
                 }
 
@@ -1106,7 +1169,8 @@ async function connectToWA() {
                     const cmd = events.commands.find((cmd) => cmd.pattern === (cmdName)) || events.commands.find((cmd) => cmd.alias && cmd.alias.includes(cmdName))
                     if (cmd) {
                         if (cmd.react) {
-                            await conn.sendMessage(from, { react: { text: cmd.react, key: mek.key } })
+                            void conn.sendMessage(from, { react: { text: cmd.react, key: mek.key } })
+                                .catch(e => console.log('Command react error:', e.message));
                         }
 
                         try {
