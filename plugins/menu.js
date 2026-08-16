@@ -16,7 +16,7 @@ const divider = (length = 20, char = '─') => char.repeat(length);
 async function sendMenu(conn, from, mek, sender, text, title, sendAudio = false) {
   try {
     await conn.sendMessage(from, {
-      video: { url: 'https://files.catbox.moe/2xxr9h.mp4' },
+      video: { url: 'https://videotourl.com/videos/1786863239200-975a4fbc-fd1f-4639-84fa-a513e6c7e0e6.mp4' },
       caption: text,
       gifPlayback: true,
       contextInfo: {
