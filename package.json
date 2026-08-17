@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@whiskeysockets/baileys": "latest",
+    "gifted-baileys": "2.5.8",
     "@adiwajshing/keyed-db": "^0.2.4",
     "@dark-yasiya/yt-dl.js": "^1.0.5",
     "@ffmpeg-installer/ffmpeg": "^1.1.0",
