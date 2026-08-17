@@ -1,3 +1,30 @@
+/*
+ * Gifted Baileys supports status reactions through the same
+ * statusJidList/sendMessage API used below. Select it with:
+ *
+ *   BAILEYS_PACKAGE=gifted-baileys
+ *
+ * The fallback keeps the script compatible with existing deployments that
+ * have only @whiskeysockets/baileys installed. Do not alias one package to
+ * the other in package.json: their internal versions and session behavior
+ * are not interchangeable.
+ */
+const baileysPackage = process.env.BAILEYS_PACKAGE || 'gifted-baileys'
+let baileys
+
+try {
+  baileys = require(baileysPackage)
+  console.log(`Using WhatsApp library: ${baileysPackage}`)
+} catch (primaryError) {
+  if (baileysPackage !== '@whiskeysockets/baileys') {
+    console.log(`Could not load ${baileysPackage}: ${primaryError.message}`)
+    console.log('Falling back to @whiskeysockets/baileys')
+    baileys = require('@whiskeysockets/baileys')
+  } else {
+    throw primaryError
+  }
+}
+
 const {
   default: makeWASocket,
   useMultiFileAuthState,
@@ -20,7 +47,7 @@ const {
   fetchLatestBaileysVersion,
   Browsers,
   makeCacheableSignalKeyStore
-} = require('@whiskeysockets/baileys')
+} = baileys
 
 const l = console.log
 const { getBuffer, getGroupAdmins, getRandom, h2k, isUrl, Json, runtime, sleep, fetchJson } = require('./lib/functions')
