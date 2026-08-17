@@ -1,30 +1,3 @@
-/*
- * Gifted Baileys supports status reactions through the same
- * statusJidList/sendMessage API used below. Select it with:
- *
- *   BAILEYS_PACKAGE=gifted-baileys
- *
- * The fallback keeps the script compatible with existing deployments that
- * have only @whiskeysockets/baileys installed. Do not alias one package to
- * the other in package.json: their internal versions and session behavior
- * are not interchangeable.
- */
-const baileysPackage = process.env.BAILEYS_PACKAGE || 'gifted-baileys'
-let baileys
-
-try {
-  baileys = require(baileysPackage)
-  console.log(`Using WhatsApp library: ${baileysPackage}`)
-} catch (primaryError) {
-  if (baileysPackage !== '@whiskeysockets/baileys') {
-    console.log(`Could not load ${baileysPackage}: ${primaryError.message}`)
-    console.log('Falling back to @whiskeysockets/baileys')
-    baileys = require('@whiskeysockets/baileys')
-  } else {
-    throw primaryError
-  }
-}
-
 const {
   default: makeWASocket,
   useMultiFileAuthState,
@@ -47,7 +20,7 @@ const {
   fetchLatestBaileysVersion,
   Browsers,
   makeCacheableSignalKeyStore
-} = baileys
+} = require('@whiskeysockets/baileys')
 
 const l = console.log
 const { getBuffer, getGroupAdmins, getRandom, h2k, isUrl, Json, runtime, sleep, fetchJson } = require('./lib/functions')
@@ -124,56 +97,8 @@ let consecutive405 = 0
 let totalWipes = 0
 let isReconnecting = false
 let connectionTimeout = null
-let sessionIdBootstrapEnabled = true
 
-/*
- * ------------------------------------------------------------------
- * SESSION_ID change detection
- * ------------------------------------------------------------------
- * This marker lives OUTSIDE the `sessions/` folder on purpose. wipeSession()
- * only clears `sessions/`, so this file survives a 405-triggered wipe and
- * lets us tell the difference between:
- *   - the SAME bad SESSION_ID being retried after a wipe (do NOT re-enable
- *     bootstrap forever, or we'd loop hammering WhatsApp with a dead ID)
- *   - a genuinely NEW SESSION_ID the user just pasted in (ALWAYS honor it,
- *     even if a stale local session currently exists on disk)
- *
- * A real fresh deploy (new slug/build) removes this file along with
- * everything else, which is fine — it just means bootstrap starts clean.
- * ------------------------------------------------------------------
- */
-const sessionMarkerPath = path.join(__dirname, '.session_id.hash')
-
-function getCleanSessionId() {
-    // Trims whitespace/newlines and strips accidental surrounding quotes —
-    // a very common cause of "invalid session" when copy-pasting SESSION_ID
-    // from a browser or chat app.
-    return (config.SESSION_ID || '').toString().trim().replace(/^["']+|["']+$/g, '')
-}
-
-function hashSessionId(id) {
-    if (!id) return null
-    return Crypto.createHash('sha256').update(id).digest('hex')
-}
-
-function getStoredSessionIdHash() {
-    try {
-        if (fs.existsSync(sessionMarkerPath)) {
-            return fs.readFileSync(sessionMarkerPath, 'utf8').trim()
-        }
-    } catch (e) {}
-    return null
-}
-
-function storeSessionIdHash(hash) {
-    try {
-        fs.writeFileSync(sessionMarkerPath, hash || '', 'utf8')
-    } catch (e) {
-        botLogger.log('ERROR', 'Failed to store SESSION_ID marker: ' + e.message)
-    }
-}
-
-function wipeSession(reason, { disableSessionIdBootstrap = false } = {}) {
+function wipeSession(reason) {
     try {
         const sessionDir = path.join(__dirname, 'sessions')
         if (fs.existsSync(sessionDir)) {
@@ -185,20 +110,14 @@ function wipeSession(reason, { disableSessionIdBootstrap = false } = {}) {
             fs.unlinkSync(credsPath)
         }
         totalWipes++
-        if (disableSessionIdBootstrap) {
-            sessionIdBootstrapEnabled = false
-            botLogger.log('WARNING', 'SESSION_ID bootstrap disabled; the next connection will require a fresh QR/pairing session')
-        }
         botLogger.log('WARNING', `♻️ Session wiped (${reason}). A fresh QR code will be generated.`)
         if (totalWipes >= 2) {
             botLogger.log('ERROR',
                 '⚠️ Session has been wiped multiple times. This usually means:\n' +
-                '1. The stored WhatsApp session was rejected with 405\n' +
-                '2. Your SESSION_ID may be invalid, expired, or already logged out\n' +
-                '3. Gifted Baileys may require a fresh QR/pairing session\n' +
-                '4. If you just pasted a NEW SESSION_ID, double check for stray\n' +
-                '   whitespace/quotes and that it matches this bot\'s pairing tool\n' +
-                '5. Scan the next QR code instead of reusing the old SESSION_ID'
+                '1. Your @whiskeysockets/baileys version is outdated\n' +
+                '2. Run: npm install @whiskeysockets/baileys@latest\n' +
+                '3. Or your SESSION_ID is invalid/corrupted\n' +
+                '4. Try generating a new SESSION_ID'
             )
         }
     } catch (e) {
@@ -214,27 +133,6 @@ async function loadSession() {
 
         if (!fs.existsSync(sessionDir)) {
             fs.mkdirSync(sessionDir, { recursive: true });
-        }
-
-        // ------------------------------------------------------------
-        // If the SESSION_ID config var has changed since we last
-        // bootstrapped from one, ALWAYS prefer it — this is what makes a
-        // freshly-pasted SESSION_ID actually take effect instead of being
-        // silently shadowed by "existing local session" logic below.
-        // ------------------------------------------------------------
-        const cleanSessionId = getCleanSessionId()
-        const currentHash = hashSessionId(cleanSessionId)
-        const storedHash = getStoredSessionIdHash()
-        const sessionIdChanged = Boolean(currentHash) && currentHash !== storedHash
-
-        if (sessionIdChanged) {
-            botLogger.log('INFO', '🔄 New SESSION_ID detected — discarding any local session and re-enabling bootstrap')
-            if (fs.existsSync(sessionDir)) {
-                fs.rmSync(sessionDir, { recursive: true, force: true })
-                fs.mkdirSync(sessionDir, { recursive: true })
-            }
-            sessionIdBootstrapEnabled = true
-            consecutive405 = 0
         }
 
         if (fs.existsSync(credsPath)) {
@@ -267,26 +165,18 @@ async function loadSession() {
          * SESSION_ID on every restart. SESSION_ID is only a bootstrap
          * credential for a fresh filesystem. Replacing current creds with an
          * older copy causes "No sessions" and repeated "Bad MAC" errors.
-         *
-         * NOTE: this branch is only reachable when sessionIdChanged is
-         * false — see the forced wipe above.
          */
         if (hasUsableLocalSession) {
             botLogger.log('INFO', "Existing local session kept; SESSION_ID was not reloaded");
             return true;
         }
 
-        if (!sessionIdBootstrapEnabled) {
-            botLogger.log('INFO', "SESSION_ID bootstrap skipped after a rejected session; waiting for QR/pairing");
-            return false;
-        }
-
-        if (!cleanSessionId) {
+        if (!config.SESSION_ID || typeof config.SESSION_ID !== 'string' || config.SESSION_ID === '') {
             botLogger.log('WARNING', "SESSION_ID missing or empty, using QR");
             return false;
         }
 
-        const [header, b64data] = cleanSessionId.split('~');
+        const [header, b64data] = config.SESSION_ID.split('~');
         if (header !== "Silva" || !b64data || b64data.length < 10) {
             botLogger.log('ERROR', "Invalid session format");
             return false;
@@ -296,7 +186,6 @@ async function loadSession() {
         const compressedData = Buffer.from(cleanB64, 'base64');
         const decompressedData = zlib.gunzipSync(compressedData);
         fs.writeFileSync(credsPath, decompressedData, "utf8");
-        storeSessionIdHash(currentHash); // remember which SESSION_ID this creds.json came from
         botLogger.log('SUCCESS', "✅ Session loaded successfully");
         return true;
     } catch (e) {
@@ -589,7 +478,7 @@ async function connectToWA() {
 
                 if (!shouldReconnect) {
                     console.log('Logged out. Please delete sessions folder and restart.')
-                    wipeSession('logged out', { disableSessionIdBootstrap: true })
+                    wipeSession('logged out')
                     isReconnecting = false;
                     return
                 }
@@ -599,17 +488,11 @@ async function connectToWA() {
                     botLogger.log('WARNING', `405 Connection Failure (${consecutive405}/${MAX_CONSECUTIVE_405})`)
                     
                     if (consecutive405 >= MAX_CONSECUTIVE_405) {
-                        wipeSession('repeated 405 Connection Failure', { disableSessionIdBootstrap: true })
+                        wipeSession('repeated 405 Connection Failure')
                         consecutive405 = 0
-                        // Growing cooldown after each wipe so a bad/expired
-                        // SESSION_ID doesn't hammer WhatsApp every few
-                        // seconds — that flapping can itself provoke more
-                        // 405s. Capped at 5 minutes.
-                        const wipeCooldown = Math.min(5000 * totalWipes, 5 * 60 * 1000)
-                        botLogger.log('INFO', `Waiting ${Math.round(wipeCooldown / 1000)}s before next attempt (wipe #${totalWipes})`)
                         reconnectAttempts = 0
                         isReconnecting = false;
-                        setTimeout(connectToWA, wipeCooldown);
+                        setTimeout(connectToWA, 5000);
                         return
                     }
                 } else {
@@ -631,7 +514,6 @@ async function connectToWA() {
             } else if (connection === 'open') {
                 reconnectAttempts = 0
                 consecutive405 = 0
-                totalWipes = 0
                 isReconnecting = false
                 
                 if (connectionTimeout) {
