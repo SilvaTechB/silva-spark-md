@@ -124,8 +124,9 @@ let consecutive405 = 0
 let totalWipes = 0
 let isReconnecting = false
 let connectionTimeout = null
+let sessionIdBootstrapEnabled = true
 
-function wipeSession(reason) {
+function wipeSession(reason, { disableSessionIdBootstrap = false } = {}) {
     try {
         const sessionDir = path.join(__dirname, 'sessions')
         if (fs.existsSync(sessionDir)) {
@@ -137,14 +138,18 @@ function wipeSession(reason) {
             fs.unlinkSync(credsPath)
         }
         totalWipes++
+        if (disableSessionIdBootstrap) {
+            sessionIdBootstrapEnabled = false
+            botLogger.log('WARNING', 'SESSION_ID bootstrap disabled; the next connection will require a fresh QR/pairing session')
+        }
         botLogger.log('WARNING', `♻️ Session wiped (${reason}). A fresh QR code will be generated.`)
         if (totalWipes >= 2) {
             botLogger.log('ERROR',
                 '⚠️ Session has been wiped multiple times. This usually means:\n' +
-                '1. Your @whiskeysockets/baileys version is outdated\n' +
-                '2. Run: npm install @whiskeysockets/baileys@latest\n' +
-                '3. Or your SESSION_ID is invalid/corrupted\n' +
-                '4. Try generating a new SESSION_ID'
+                '1. The stored WhatsApp session was rejected with 405\n' +
+                '2. Your SESSION_ID may be invalid or already logged out\n' +
+                '3. Gifted Baileys may require a fresh QR/pairing session\n' +
+                '4. Scan the next QR code instead of reusing the old SESSION_ID'
             )
         }
     } catch (e) {
@@ -196,6 +201,11 @@ async function loadSession() {
         if (hasUsableLocalSession) {
             botLogger.log('INFO', "Existing local session kept; SESSION_ID was not reloaded");
             return true;
+        }
+
+        if (!sessionIdBootstrapEnabled) {
+            botLogger.log('INFO', "SESSION_ID bootstrap skipped after a rejected session; waiting for QR/pairing");
+            return false;
         }
 
         if (!config.SESSION_ID || typeof config.SESSION_ID !== 'string' || config.SESSION_ID === '') {
@@ -505,7 +515,7 @@ async function connectToWA() {
 
                 if (!shouldReconnect) {
                     console.log('Logged out. Please delete sessions folder and restart.')
-                    wipeSession('logged out')
+                    wipeSession('logged out', { disableSessionIdBootstrap: true })
                     isReconnecting = false;
                     return
                 }
@@ -515,7 +525,7 @@ async function connectToWA() {
                     botLogger.log('WARNING', `405 Connection Failure (${consecutive405}/${MAX_CONSECUTIVE_405})`)
                     
                     if (consecutive405 >= MAX_CONSECUTIVE_405) {
-                        wipeSession('repeated 405 Connection Failure')
+                        wipeSession('repeated 405 Connection Failure', { disableSessionIdBootstrap: true })
                         consecutive405 = 0
                         reconnectAttempts = 0
                         isReconnecting = false;
