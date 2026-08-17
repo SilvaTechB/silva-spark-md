@@ -55,4 +55,7 @@ module.exports = {
     
     // Anti-Delete Settings
     ANTI_DEL_PATH: process.env.ANTI_DEL_PATH || "log", // 'log' or 'same'
+
+    // API Keys
+    OPENWEATHER_API_KEY: process.env.OPENWEATHER_API_KEY || "",
 };
